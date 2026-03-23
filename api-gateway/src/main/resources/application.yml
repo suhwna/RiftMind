@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: summoner-service
+              uri: ${SUMMONER_SERVICE_URL:http://localhost:18080}
+              predicates:
+                - Path=/api/v1/summoners/**,/api/v1/matches/**
+
+server:
+  port: ${SERVER_PORT:18000}

@@ -1,4 +1,5 @@
 .idea/
-  **/target/
-  *.log
-AGENT.md
+.vscode/
+*.log
+
+**/target/
