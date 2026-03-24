@@ -1,8 +1,8 @@
-package com.riftmind.summoner.application.dto;
+package com.riftmind.match.application.dto;
 
 import java.time.LocalDateTime;
 
-import com.riftmind.summoner.domain.match.MatchParticipant;
+import com.riftmind.match.domain.match.MatchParticipant;
 
 /**
  * 최근 경기 목록 조회용 애플리케이션 DTO입니다.

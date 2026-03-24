@@ -32,6 +32,8 @@ springdoc:
     path: /swagger-ui.html
 
 riftmind:
+  match-service:
+    base-url: ${MATCH_SERVICE_URL:http://localhost:18081}
   riot:
     account-base-url: https://asia.api.riotgames.com
     summoner-base-url: https://kr.api.riotgames.com

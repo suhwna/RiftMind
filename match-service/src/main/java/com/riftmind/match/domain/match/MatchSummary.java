@@ -1,11 +1,11 @@
-package com.riftmind.summoner.domain.match;
+package com.riftmind.match.domain.match;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.riftmind.summoner.domain.common.BaseTimeEntity;
+import com.riftmind.match.domain.common.BaseTimeEntity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;

@@ -2,9 +2,6 @@ package com.riftmind.summoner.api.response;
 
 import java.time.LocalDateTime;
 
-import com.riftmind.summoner.application.dto.RecentMatchView;
-import com.riftmind.summoner.application.service.StaticDataService;
-
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
@@ -41,28 +38,4 @@ public record SummonerMatchSummaryResponse(
         int assists,
         @Schema(description = "승리 여부", example = "true")
         boolean win) {
-
-    /**
-     * 최근 경기 조회 DTO를 API 응답 DTO로 변환합니다.
-     *
-     * @param view 최근 경기 조회 DTO
-     * @param staticDataService 정적 데이터 서비스
-     * @return 경기 요약 응답 DTO
-     */
-    public static SummonerMatchSummaryResponse from(RecentMatchView view, StaticDataService staticDataService) {
-        return new SummonerMatchSummaryResponse(
-                view.matchId(),
-                view.gameCreation(),
-                view.queueId(),
-                staticDataService.getQueueNameKo(view.queueId()),
-                view.gameMode(),
-                view.championName(),
-                staticDataService.getChampionNameKo(view.championName()),
-                view.teamPosition(),
-                staticDataService.getTeamPositionKo(view.teamPosition()),
-                view.kills(),
-                view.deaths(),
-                view.assists(),
-                view.win());
-    }
 }

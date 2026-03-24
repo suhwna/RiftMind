@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.annotation.EnableCaching;
 
+import com.riftmind.summoner.infrastructure.config.MatchServiceProperties;
 import com.riftmind.summoner.infrastructure.config.RiotApiProperties;
 
 /**
@@ -15,7 +16,7 @@ import com.riftmind.summoner.infrastructure.config.RiotApiProperties;
  */
 @SpringBootApplication
 @EnableCaching
-@EnableConfigurationProperties(RiotApiProperties.class)
+@EnableConfigurationProperties({RiotApiProperties.class, MatchServiceProperties.class})
 public class SummonerServiceApplication {
 
     /**

@@ -1,9 +1,9 @@
-package com.riftmind.summoner.application.dto;
+package com.riftmind.match.application.dto;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.riftmind.summoner.domain.match.MatchSummary;
+import com.riftmind.match.domain.match.MatchSummary;
 
 /**
  * 매치 상세 조회용 애플리케이션 DTO입니다.

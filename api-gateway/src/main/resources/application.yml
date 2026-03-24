@@ -5,11 +5,55 @@ spring:
     gateway:
       server:
         webflux:
+          globalcors:
+            add-to-simple-url-handler-mapping: true
+            cors-configurations:
+              '[/**]':
+                allowed-origin-patterns:
+                  - "http://localhost:*"
+                  - "http://127.0.0.1:*"
+                allowed-methods:
+                  - GET
+                  - POST
+                  - PUT
+                  - PATCH
+                  - DELETE
+                  - OPTIONS
+                allowed-headers:
+                  - "*"
+                allow-credentials: true
+                max-age: 3600
           routes:
             - id: summoner-service
               uri: ${SUMMONER_SERVICE_URL:http://localhost:18080}
               predicates:
-                - Path=/api/v1/summoners/**,/api/v1/matches/**
+                - Path=/api/v1/summoners/**
+            - id: match-service
+              uri: ${MATCH_SERVICE_URL:http://localhost:18081}
+              predicates:
+                - Path=/api/v1/matches/**
+            - id: summoner-service-docs
+              uri: ${SUMMONER_SERVICE_URL:http://localhost:18080}
+              predicates:
+                - Path=/v3/api-docs/summoner-service
+              filters:
+                - SetPath=/v3/api-docs
+            - id: match-service-docs
+              uri: ${MATCH_SERVICE_URL:http://localhost:18081}
+              predicates:
+                - Path=/v3/api-docs/match-service
+              filters:
+                - SetPath=/v3/api-docs
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    disable-swagger-default-url: true
+    urls:
+      - name: summoner-service
+        url: /v3/api-docs/summoner-service
+      - name: match-service
+        url: /v3/api-docs/match-service
 
 server:
   port: ${SERVER_PORT:18000}

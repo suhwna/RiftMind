@@ -1,0 +1,12 @@
+spring:
+  config:
+    activate:
+      on-profile: postgres
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/riftmind_match}
+    username: ${DB_USERNAME:riftmind}
+    password: ${DB_PASSWORD:riftmind}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true

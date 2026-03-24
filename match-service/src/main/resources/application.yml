@@ -1,0 +1,43 @@
+server:
+  port: 18081
+
+spring:
+  application:
+    name: match-service
+  datasource:
+    url: jdbc:h2:file:./data/riftmind-match;MODE=PostgreSQL;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    show-sql: true
+  cache:
+    type: caffeine
+    cache-names:
+      - riotAccountByRiotId
+      - riotSummonerByPuuid
+      - riotMatchIdsByPuuid
+      - riotMatchById
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+riftmind:
+  riot:
+    account-base-url: https://asia.api.riotgames.com
+    summoner-base-url: https://kr.api.riotgames.com
+    match-base-url: https://asia.api.riotgames.com
+    data-dragon-base-url: https://ddragon.leagueoflegends.com
+    data-dragon-realm: kr
+    data-dragon-locale: ko_KR
+    api-key: ${RIOT_API_KEY:RGAPI-123e9649-5d40-4e47-b351-d22d75136d44}
+    match-fetch-max-count: 20

@@ -1,6 +1,6 @@
-package com.riftmind.summoner.domain.match;
+package com.riftmind.match.domain.match;
 
-import com.riftmind.summoner.domain.common.BaseTimeEntity;
+import com.riftmind.match.domain.common.BaseTimeEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

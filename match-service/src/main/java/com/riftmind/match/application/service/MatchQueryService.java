@@ -1,4 +1,4 @@
-package com.riftmind.summoner.application.service;
+package com.riftmind.match.application.service;
 
 import java.util.List;
 
@@ -6,12 +6,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.riftmind.summoner.application.dto.MatchDetailView;
-import com.riftmind.summoner.application.dto.RecentMatchView;
-import com.riftmind.summoner.global.exception.ApiErrorCode;
-import com.riftmind.summoner.global.exception.ResourceNotFoundException;
-import com.riftmind.summoner.infrastructure.persistence.repository.MatchParticipantRepository;
-import com.riftmind.summoner.infrastructure.persistence.repository.MatchSummaryRepository;
+import com.riftmind.match.application.dto.MatchDetailView;
+import com.riftmind.match.application.dto.RecentMatchView;
+import com.riftmind.match.global.exception.ApiErrorCode;
+import com.riftmind.match.global.exception.ResourceNotFoundException;
+import com.riftmind.match.infrastructure.persistence.repository.MatchParticipantRepository;
+import com.riftmind.match.infrastructure.persistence.repository.MatchSummaryRepository;
 
 /**
  * 저장된 매치 데이터 조회를 담당합니다.

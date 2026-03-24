@@ -1,10 +1,10 @@
-package com.riftmind.summoner.api.response;
+package com.riftmind.match.api.response;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.riftmind.summoner.application.dto.MatchDetailView;
-import com.riftmind.summoner.application.service.StaticDataService;
+import com.riftmind.match.application.dto.MatchDetailView;
+import com.riftmind.match.application.service.StaticDataService;
 
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;

@@ -1,10 +1,10 @@
-package com.riftmind.summoner.infrastructure.persistence.repository;
+package com.riftmind.match.infrastructure.persistence.repository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.riftmind.summoner.domain.match.MatchParticipant;
+import com.riftmind.match.domain.match.MatchParticipant;
 
 /**
  * 매치 참가자 저장소입니다.

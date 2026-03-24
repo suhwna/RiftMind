@@ -18,7 +18,7 @@
 ## 2. 저장소 운영 원칙
 
 - 현재 프로젝트는 `모노레포 멀티모듈` 구조로 관리한다.
-- `api-gateway`, `summoner-service`, `common` 은 하나의 Git 저장소 안에서 관리한다.
+- `api-gateway`, `summoner-service`, `match-service`, `common` 은 하나의 Git 저장소 안에서 관리한다.
 - MSA를 지향하더라도 현재 단계에서는 서비스별 Git 저장소로 분리하지 않는다.
 - 서비스별 브랜치를 상시 운영하지 않는다.
 - Maven wrapper는 루트에서 하나만 관리한다.
@@ -45,7 +45,7 @@
 
 ### 금지/비권장
 
-- `summoner-service`, `api-gateway` 같은 영구 서비스 브랜치 운영
+- `summoner-service`, `match-service`, `api-gateway` 같은 영구 서비스 브랜치 운영
 - 하나의 브랜치를 너무 오래 유지
 - 테스트되지 않은 상태를 바로 `main` 에 직접 커밋
 
@@ -61,10 +61,18 @@
 
 ### summoner-service
 
-- Riot API 원천 데이터 수집
+- Riot ID 기준 계정/소환사 프로필 동기화
 - Riot ID -> PUUID 변환
-- 소환사/매치 데이터 저장
-- 저장된 데이터 조회 API 제공
+- 소환사 프로필 저장
+- `match-service` 호출 진입점
+- 저장된 프로필 조회 API 제공
+
+### match-service
+
+- Match-V5 상세 수집
+- 매치/참가자 데이터 저장
+- 저장된 경기/참가자 조회 API 제공
+- 표시용 정적 데이터 변환
 
 ### 추후 분리 대상
 
@@ -75,6 +83,7 @@
 ### 금지 원칙
 
 - `summoner-service` 에 검색/AI 책임을 같이 넣지 않는다.
+- `match-service` 에 소환사 프로필 책임을 같이 넣지 않는다.
 - 서비스 간 경계가 흐려지는 공용 도메인 설계를 피한다.
 
 ---
@@ -172,7 +181,7 @@
 
 ## 12. 현재 단계 기준 우선순위
 
-1. `summoner-service` 완성
+1. `summoner-service` / `match-service` 경계 유지
 2. Riot API 연동
 3. DB 저장/조회 안정화
 4. `search-service` 분리

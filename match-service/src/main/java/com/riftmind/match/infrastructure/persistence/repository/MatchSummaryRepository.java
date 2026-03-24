@@ -1,11 +1,11 @@
-package com.riftmind.summoner.infrastructure.persistence.repository;
+package com.riftmind.match.infrastructure.persistence.repository;
 
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.riftmind.summoner.domain.match.MatchSummary;
+import com.riftmind.match.domain.match.MatchSummary;
 
 /**
  * 매치 요약 저장소입니다.

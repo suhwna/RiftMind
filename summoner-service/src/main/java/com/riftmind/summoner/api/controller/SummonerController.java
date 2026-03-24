@@ -1,5 +1,6 @@
 package com.riftmind.summoner.api.controller;
 
+import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,10 +14,9 @@ import com.riftmind.summoner.api.request.SummonerSyncRequest;
 import com.riftmind.summoner.api.response.SummonerMatchListResponse;
 import com.riftmind.summoner.api.response.SummonerProfileResponse;
 import com.riftmind.summoner.api.response.SummonerSyncResponse;
-import com.riftmind.summoner.application.service.MatchQueryService;
-import com.riftmind.summoner.application.service.StaticDataService;
 import com.riftmind.summoner.application.service.SummonerQueryService;
 import com.riftmind.summoner.application.service.SummonerSyncService;
+import com.riftmind.summoner.infrastructure.match.MatchServiceClient;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -35,23 +35,20 @@ import jakarta.validation.constraints.NotBlank;
 @Validated
 @Tag(name = "Summoner", description = "Riot ID 기반 소환사 조회 및 동기화 API")
 @RestController
-@RequestMapping("/api/v1/summoners")
+@RequestMapping(value = "/api/v1/summoners", produces = MediaType.APPLICATION_JSON_VALUE)
 public class SummonerController {
 
     private final SummonerSyncService summonerSyncService;
     private final SummonerQueryService summonerQueryService;
-    private final MatchQueryService matchQueryService;
-    private final StaticDataService staticDataService;
+    private final MatchServiceClient matchServiceClient;
 
     public SummonerController(
             SummonerSyncService summonerSyncService,
             SummonerQueryService summonerQueryService,
-            MatchQueryService matchQueryService,
-            StaticDataService staticDataService) {
+            MatchServiceClient matchServiceClient) {
         this.summonerSyncService = summonerSyncService;
         this.summonerQueryService = summonerQueryService;
-        this.matchQueryService = matchQueryService;
-        this.staticDataService = staticDataService;
+        this.matchServiceClient = matchServiceClient;
     }
 
     /**
@@ -60,7 +57,7 @@ public class SummonerController {
      * @param request 소환사 동기화 요청 정보
      * @return 동기화 결과 응답
      */
-    @PostMapping("/sync")
+    @PostMapping(value = "/sync", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "소환사 동기화", description = "Riot ID로 계정, 소환사, 최근 매치 정보를 수집해 내부 저장소에 동기화합니다.")
     public SummonerSyncResponse sync(@Valid @RequestBody SummonerSyncRequest request) {
         return SummonerSyncResponse.from(
@@ -110,9 +107,6 @@ public class SummonerController {
             @Parameter(description = "Riot PUUID", example = "sample-puuid-value") @PathVariable String puuid,
             @Parameter(description = "조회할 경기 수", example = "20")
             @RequestParam(defaultValue = "20") @Min(1) @Max(20) int count) {
-        return SummonerMatchListResponse.from(
-                puuid,
-                matchQueryService.getRecentMatches(puuid, count),
-                staticDataService);
+        return matchServiceClient.getRecentMatches(puuid, count);
     }
 }
