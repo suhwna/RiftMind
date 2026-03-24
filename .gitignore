@@ -3,9 +3,6 @@
 *.log
 
 **/target/
-/scripts
-/summoner-service/data
-/data
-/data
-/db
-/match-service/data
+/data/
+**/*.mv.db
+**/*.trace.db
