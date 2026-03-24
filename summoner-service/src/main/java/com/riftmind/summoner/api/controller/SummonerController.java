@@ -14,6 +14,7 @@ import com.riftmind.summoner.api.response.SummonerMatchListResponse;
 import com.riftmind.summoner.api.response.SummonerProfileResponse;
 import com.riftmind.summoner.api.response.SummonerSyncResponse;
 import com.riftmind.summoner.application.service.MatchQueryService;
+import com.riftmind.summoner.application.service.StaticDataService;
 import com.riftmind.summoner.application.service.SummonerQueryService;
 import com.riftmind.summoner.application.service.SummonerSyncService;
 
@@ -40,14 +41,17 @@ public class SummonerController {
     private final SummonerSyncService summonerSyncService;
     private final SummonerQueryService summonerQueryService;
     private final MatchQueryService matchQueryService;
+    private final StaticDataService staticDataService;
 
     public SummonerController(
             SummonerSyncService summonerSyncService,
             SummonerQueryService summonerQueryService,
-            MatchQueryService matchQueryService) {
+            MatchQueryService matchQueryService,
+            StaticDataService staticDataService) {
         this.summonerSyncService = summonerSyncService;
         this.summonerQueryService = summonerQueryService;
         this.matchQueryService = matchQueryService;
+        this.staticDataService = staticDataService;
     }
 
     /**
@@ -106,6 +110,9 @@ public class SummonerController {
             @Parameter(description = "Riot PUUID", example = "sample-puuid-value") @PathVariable String puuid,
             @Parameter(description = "조회할 경기 수", example = "20")
             @RequestParam(defaultValue = "20") @Min(1) @Max(20) int count) {
-        return SummonerMatchListResponse.from(puuid, matchQueryService.getRecentMatches(puuid, count));
+        return SummonerMatchListResponse.from(
+                puuid,
+                matchQueryService.getRecentMatches(puuid, count),
+                staticDataService);
     }
 }

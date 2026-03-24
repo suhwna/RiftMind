@@ -14,6 +14,9 @@ public class RiotApiProperties {
     private String accountBaseUrl;
     private String summonerBaseUrl;
     private String matchBaseUrl;
+    private String dataDragonBaseUrl = "https://ddragon.leagueoflegends.com";
+    private String dataDragonRealm = "kr";
+    private String dataDragonLocale = "ko_KR";
     private String apiKey;
     private int matchFetchMaxCount = 20;
 
@@ -69,6 +72,60 @@ public class RiotApiProperties {
      */
     public void setMatchBaseUrl(String matchBaseUrl) {
         this.matchBaseUrl = matchBaseUrl;
+    }
+
+    /**
+     * Data Dragon 기본 URL을 반환합니다.
+     *
+     * @return Data Dragon 기본 URL
+     */
+    public String getDataDragonBaseUrl() {
+        return dataDragonBaseUrl;
+    }
+
+    /**
+     * Data Dragon 기본 URL을 설정합니다.
+     *
+     * @param dataDragonBaseUrl Data Dragon 기본 URL
+     */
+    public void setDataDragonBaseUrl(String dataDragonBaseUrl) {
+        this.dataDragonBaseUrl = dataDragonBaseUrl;
+    }
+
+    /**
+     * Data Dragon realm 값을 반환합니다.
+     *
+     * @return Data Dragon realm 값
+     */
+    public String getDataDragonRealm() {
+        return dataDragonRealm;
+    }
+
+    /**
+     * Data Dragon realm 값을 설정합니다.
+     *
+     * @param dataDragonRealm Data Dragon realm 값
+     */
+    public void setDataDragonRealm(String dataDragonRealm) {
+        this.dataDragonRealm = dataDragonRealm;
+    }
+
+    /**
+     * Data Dragon locale 값을 반환합니다.
+     *
+     * @return Data Dragon locale 값
+     */
+    public String getDataDragonLocale() {
+        return dataDragonLocale;
+    }
+
+    /**
+     * Data Dragon locale 값을 설정합니다.
+     *
+     * @param dataDragonLocale Data Dragon locale 값
+     */
+    public void setDataDragonLocale(String dataDragonLocale) {
+        this.dataDragonLocale = dataDragonLocale;
     }
 
     /**

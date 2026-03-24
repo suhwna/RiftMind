@@ -188,6 +188,26 @@ public class SummonerSyncService {
                 participant.kills(),
                 participant.deaths(),
                 participant.assists(),
-                participant.win());
+                participant.win(),
+                participant.totalDamageDealtToChampions(),
+                participant.goldEarned(),
+                participant.totalMinionsKilled(),
+                participant.neutralMinionsKilled(),
+                participant.visionScore(),
+                participant.wardsPlaced(),
+                participant.wardsKilled(),
+                participant.champLevel(),
+                participant.item0(),
+                participant.item1(),
+                participant.item2(),
+                participant.item3(),
+                participant.item4(),
+                participant.item5(),
+                participant.item6(),
+                participant.summoner1Id(),
+                participant.summoner2Id(),
+                participant.primaryRune(),
+                participant.secondaryRune(),
+                participant.totalDamageTaken());
     }
 }

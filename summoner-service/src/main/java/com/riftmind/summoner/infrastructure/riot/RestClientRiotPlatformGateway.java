@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatusCode;
@@ -25,6 +26,12 @@ import com.riftmind.summoner.infrastructure.config.RiotApiProperties;
 public class RestClientRiotPlatformGateway implements RiotPlatformGateway {
 
     private static final String RIOT_TOKEN_HEADER = "X-Riot-Token";
+    private static final Set<String> VALID_TEAM_POSITIONS = Set.of(
+            "TOP",
+            "JUNGLE",
+            "MIDDLE",
+            "BOTTOM",
+            "UTILITY");
 
     private final RiotApiProperties riotApiProperties;
     private final RestClient accountClient;
@@ -202,13 +209,78 @@ public class RestClientRiotPlatformGateway implements RiotPlatformGateway {
     private RiotMatchParticipantPayload toParticipantPayload(MatchParticipantResponse participant) {
         return new RiotMatchParticipantPayload(
                 participant.puuid(),
-                participant.summonerName(),
+                resolveParticipantRiotId(
+                        participant.riotIdGameName(),
+                        participant.riotIdTagline(),
+                        participant.summonerName()),
                 participant.championName(),
-                participant.teamPosition(),
+                resolveTeamPosition(participant.teamPosition(), participant.individualPosition()),
                 participant.kills(),
                 participant.deaths(),
                 participant.assists(),
-                participant.win());
+                participant.win(),
+                participant.totalDamageDealtToChampions(),
+                participant.goldEarned(),
+                participant.totalMinionsKilled(),
+                participant.neutralMinionsKilled(),
+                participant.visionScore(),
+                participant.wardsPlaced(),
+                participant.wardsKilled(),
+                participant.champLevel(),
+                participant.item0(),
+                participant.item1(),
+                participant.item2(),
+                participant.item3(),
+                participant.item4(),
+                participant.item5(),
+                participant.item6(),
+                participant.summoner1Id(),
+                participant.summoner2Id(),
+                extractPrimaryRune(participant.perks()),
+                extractSecondaryRune(participant.perks()),
+                participant.totalDamageTaken());
+    }
+
+    /**
+     * 참가자 Riot ID를 구성하고, 값이 없으면 기존 소환사 이름으로 대체합니다.
+     *
+     * @param riotIdGameName Riot 게임 이름
+     * @param riotIdTagline Riot 태그 라인
+     * @param summonerName 기존 소환사 이름
+     * @return 표시용 참가자 식별자
+     */
+    private String resolveParticipantRiotId(String riotIdGameName, String riotIdTagline, String summonerName) {
+        if (StringUtils.hasText(riotIdGameName) && StringUtils.hasText(riotIdTagline)) {
+            return riotIdGameName + "#" + riotIdTagline;
+        }
+        return summonerName;
+    }
+
+    /**
+     * 팀 포지션을 우선 사용하고, 비어 있으면 개인 포지션으로 대체합니다.
+     *
+     * @param teamPosition 팀 포지션
+     * @param individualPosition 개인 포지션
+     * @return 저장할 포지션 값
+     */
+    private String resolveTeamPosition(String teamPosition, String individualPosition) {
+        if (isValidTeamPosition(teamPosition)) {
+            return teamPosition;
+        }
+        if (isValidTeamPosition(individualPosition)) {
+            return individualPosition;
+        }
+        return null;
+    }
+
+    /**
+     * 저장 가능한 포지션 값인지 검증합니다.
+     *
+     * @param position Riot 응답 포지션
+     * @return 저장 가능 여부
+     */
+    private boolean isValidTeamPosition(String position) {
+        return StringUtils.hasText(position) && VALID_TEAM_POSITIONS.contains(position);
     }
 
     /**
@@ -222,6 +294,45 @@ public class RestClientRiotPlatformGateway implements RiotPlatformGateway {
             throw new RiotApiException("Riot match response is missing gameCreation.");
         }
         return LocalDateTime.ofInstant(Instant.ofEpochMilli(epochMillis), ZoneId.systemDefault());
+    }
+
+    /**
+     * 참가자 룬 정보에서 주 룬 스타일 ID를 추출합니다.
+     *
+     * @param perks 참가자 룬 정보
+     * @return 주 룬 스타일 ID
+     */
+    private Integer extractPrimaryRune(PerksResponse perks) {
+        return extractRuneStyleId(perks, "primaryStyle");
+    }
+
+    /**
+     * 참가자 룬 정보에서 보조 룬 스타일 ID를 추출합니다.
+     *
+     * @param perks 참가자 룬 정보
+     * @return 보조 룬 스타일 ID
+     */
+    private Integer extractSecondaryRune(PerksResponse perks) {
+        return extractRuneStyleId(perks, "subStyle");
+    }
+
+    /**
+     * 참가자 룬 정보에서 지정한 설명에 해당하는 룬 스타일 ID를 추출합니다.
+     *
+     * @param perks 참가자 룬 정보
+     * @param description 룬 설명 키
+     * @return 룬 스타일 ID
+     */
+    private Integer extractRuneStyleId(PerksResponse perks, String description) {
+        if (perks == null || perks.styles() == null) {
+            return null;
+        }
+
+        return perks.styles().stream()
+                .filter(style -> description.equals(style.description()))
+                .map(StyleResponse::style)
+                .findFirst()
+                .orElse(null);
     }
 
     private record AccountResponse(
@@ -257,12 +368,43 @@ public class RestClientRiotPlatformGateway implements RiotPlatformGateway {
 
     private record MatchParticipantResponse(
             String puuid,
+            String riotIdGameName,
+            String riotIdTagline,
             String summonerName,
             String championName,
             String teamPosition,
+            String individualPosition,
             int kills,
             int deaths,
             int assists,
-            boolean win) {
+            boolean win,
+            int totalDamageDealtToChampions,
+            int goldEarned,
+            int totalMinionsKilled,
+            int neutralMinionsKilled,
+            int visionScore,
+            int wardsPlaced,
+            int wardsKilled,
+            int champLevel,
+            int item0,
+            int item1,
+            int item2,
+            int item3,
+            int item4,
+            int item5,
+            int item6,
+            int summoner1Id,
+            int summoner2Id,
+            int totalDamageTaken,
+            PerksResponse perks) {
+    }
+
+    private record PerksResponse(
+            List<StyleResponse> styles) {
+    }
+
+    private record StyleResponse(
+            String description,
+            Integer style) {
     }
 }

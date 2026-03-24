@@ -16,7 +16,27 @@ public record MatchParticipantView(
         int kills,
         int deaths,
         int assists,
-        boolean win) {
+        boolean win,
+        int totalDamageDealtToChampions,
+        int goldEarned,
+        int totalMinionsKilled,
+        int neutralMinionsKilled,
+        int visionScore,
+        int wardsPlaced,
+        int wardsKilled,
+        int champLevel,
+        int item0,
+        int item1,
+        int item2,
+        int item3,
+        int item4,
+        int item5,
+        int item6,
+        int summoner1Id,
+        int summoner2Id,
+        Integer primaryRune,
+        Integer secondaryRune,
+        int totalDamageTaken) {
 
     /**
      * 참가자 엔티티를 참가자 조회 DTO로 변환합니다.
@@ -33,6 +53,26 @@ public record MatchParticipantView(
                 participant.getKills(),
                 participant.getDeaths(),
                 participant.getAssists(),
-                participant.isWin());
+                participant.isWin(),
+                participant.getTotalDamageDealtToChampions(),
+                participant.getGoldEarned(),
+                participant.getTotalMinionsKilled(),
+                participant.getNeutralMinionsKilled(),
+                participant.getVisionScore(),
+                participant.getWardsPlaced(),
+                participant.getWardsKilled(),
+                participant.getChampLevel(),
+                participant.getItem0(),
+                participant.getItem1(),
+                participant.getItem2(),
+                participant.getItem3(),
+                participant.getItem4(),
+                participant.getItem5(),
+                participant.getItem6(),
+                participant.getSummoner1Id(),
+                participant.getSummoner2Id(),
+                participant.getPrimaryRune(),
+                participant.getSecondaryRune(),
+                participant.getTotalDamageTaken());
     }
 }
