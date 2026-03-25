@@ -3,6 +3,12 @@ package com.riftmind.search.application.service;
 import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import com.riftmind.search.api.response.ChampionSuggestionListResponse;
+import com.riftmind.search.api.response.ChampionSuggestionResponse;
+import com.riftmind.search.api.response.SearchFilterChampionOptionResponse;
+import com.riftmind.search.api.response.SearchFilterModeOptionResponse;
+import com.riftmind.search.api.response.SearchFilterOptionsResponse;
+import com.riftmind.search.api.response.SearchFilterPositionOptionResponse;
 import com.riftmind.search.api.response.SearchMatchListResponse;
 import com.riftmind.search.api.response.SearchMatchResponse;
 import com.riftmind.search.domain.search.MatchSearchDocument;
@@ -16,7 +22,10 @@ import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * Elasticsearch 기반 매치 검색을 담당합니다.
@@ -61,9 +70,9 @@ public class SearchQueryService {
      */
     public SearchMatchListResponse searchMatches(
             String puuid,
-            String championName,
-            String teamPosition,
-            Integer queueId,
+            List<String> championNames,
+            List<String> teamPositions,
+            List<Integer> queueIds,
             Boolean win,
             String itemName,
             String summonerSpellName,
@@ -85,9 +94,9 @@ public class SearchQueryService {
         Pageable pageable = PageRequest.of(page, size);
         Query query = buildQuery(
                 puuid,
-                championName,
-                teamPosition,
-                queueId,
+                championNames,
+                teamPositions,
+                queueIds,
                 win,
                 itemName,
                 summonerSpellName,
@@ -122,11 +131,103 @@ public class SearchQueryService {
         return new SearchMatchListResponse(searchHits.getTotalHits(), page, size, matches);
     }
 
+    /**
+     * 현재 소환사 기준으로 체크형 고급 검색 필터 옵션을 계산합니다.
+     *
+     * @param puuid Riot PUUID
+     * @return 필터 옵션 응답
+     */
+    public SearchFilterOptionsResponse getFilterOptions(String puuid) {
+        NativeQuery query = new NativeQueryBuilder()
+                .withQuery(termQuery("puuid", puuid))
+                .withPageable(PageRequest.of(0, 100))
+                .build();
+
+        SearchHits<MatchSearchDocument> searchHits =
+                elasticsearchOperations.search(query, MatchSearchDocument.class);
+
+        Map<String, SearchFilterChampionOptionResponse> champions = new LinkedHashMap<>();
+        Map<String, SearchFilterPositionOptionResponse> positions = new LinkedHashMap<>();
+        Map<Integer, SearchFilterModeOptionResponse> modes = new LinkedHashMap<>();
+
+        searchHits.getSearchHits().stream()
+                .map(SearchHit::getContent)
+                .forEach(document -> {
+                    champions.putIfAbsent(
+                            document.getChampionName(),
+                            new SearchFilterChampionOptionResponse(document.getChampionName(), document.getChampionNameKo())
+                    );
+
+                    if (hasText(document.getTeamPosition())) {
+                        positions.putIfAbsent(
+                                document.getTeamPosition(),
+                                new SearchFilterPositionOptionResponse(document.getTeamPosition(), document.getTeamPositionKo())
+                        );
+                    }
+
+                    if (document.getQueueId() != null && hasText(document.getQueueNameKo())) {
+                        Integer normalizedQueueId = document.getQueueId() == 1710 ? 1700 : document.getQueueId();
+                        modes.putIfAbsent(
+                                normalizedQueueId,
+                                new SearchFilterModeOptionResponse(normalizedQueueId, document.getQueueNameKo())
+                        );
+                    }
+                });
+
+        return new SearchFilterOptionsResponse(
+                champions.values().stream()
+                        .sorted((left, right) -> left.championNameKo().compareToIgnoreCase(right.championNameKo()))
+                        .toList(),
+                positions.values().stream()
+                        .sorted((left, right) -> left.teamPositionKo().compareToIgnoreCase(right.teamPositionKo()))
+                        .toList(),
+                modes.values().stream()
+                        .sorted((left, right) -> left.queueNameKo().compareToIgnoreCase(right.queueNameKo()))
+                        .toList()
+        );
+    }
+
+    /**
+     * 한글/영문 챔피언 이름으로 자동완성 목록을 조회합니다.
+     *
+     * @param keyword 사용자 입력 키워드
+     * @param size 최대 자동완성 개수
+     * @return 자동완성 목록 응답
+     */
+    public ChampionSuggestionListResponse suggestChampions(String keyword, int size) {
+        if (!hasText(keyword)) {
+            return new ChampionSuggestionListResponse(List.of());
+        }
+
+        NativeQuery query = new NativeQueryBuilder()
+                .withQuery(championPrefixQuery(keyword))
+                .withPageable(PageRequest.of(0, Math.max(size * 4, size)))
+                .build();
+
+        SearchHits<MatchSearchDocument> searchHits =
+                elasticsearchOperations.search(query, MatchSearchDocument.class);
+
+        Map<String, ChampionSuggestionResponse> suggestions = new LinkedHashMap<>();
+
+        searchHits.getSearchHits().stream()
+                .map(SearchHit::getContent)
+                .forEach(document -> suggestions.putIfAbsent(
+                        document.getChampionName(),
+                        new ChampionSuggestionResponse(document.getChampionName(), document.getChampionNameKo())
+                ));
+
+        return new ChampionSuggestionListResponse(
+                suggestions.values().stream()
+                        .limit(size)
+                        .toList()
+        );
+    }
+
     private Query buildQuery(
             String puuid,
-            String championName,
-            String teamPosition,
-            Integer queueId,
+            List<String> championNames,
+            List<String> teamPositions,
+            List<Integer> queueIds,
             Boolean win,
             String itemName,
             String summonerSpellName,
@@ -148,14 +249,14 @@ public class SearchQueryService {
         if (hasText(puuid)) {
             filters.add(termQuery("puuid", puuid));
         }
-        if (hasText(championName)) {
-            filters.add(termQuery("championName", championName));
+        if (hasValues(championNames)) {
+            filters.add(anyChampionQuery(championNames));
         }
-        if (hasText(teamPosition)) {
-            filters.add(termQuery("teamPosition", teamPosition));
+        if (hasValues(teamPositions)) {
+            filters.add(anyStringTermsQuery("teamPosition", teamPositions));
         }
-        if (queueId != null) {
-            filters.add(termQuery("queueId", queueId));
+        if (hasValues(queueIds)) {
+            filters.add(anyQueueQuery(queueIds));
         }
         if (win != null) {
             filters.add(Query.of(query -> query.term(term -> term.field("win").value(win))));
@@ -230,6 +331,39 @@ public class SearchQueryService {
     }
 
     /**
+     * 챔피언 이름은 영문/한글 양쪽 필드에서 부분 일치로 검색합니다.
+     *
+     * @param championName 사용자가 입력한 챔피언 이름
+     * @return 챔피언 이름 검색 쿼리
+     */
+    private Query championNameQuery(String championName) {
+        String keyword = "*" + championName.trim() + "*";
+
+        return Query.of(query -> query.bool(bool -> bool.should(
+                wildcardQuery("championName", keyword),
+                wildcardQuery("championNameKo", keyword)
+        ).minimumShouldMatch("1")));
+    }
+
+    private Query anyChampionQuery(List<String> championNames) {
+        return Query.of(query -> query.bool(bool -> bool.should(
+                championNames.stream()
+                        .filter(this::hasText)
+                        .map(name -> termQuery("championName", name))
+                        .toList()
+        ).minimumShouldMatch("1")));
+    }
+
+    private Query championPrefixQuery(String championName) {
+        String keyword = championName.trim() + "*";
+
+        return Query.of(query -> query.bool(bool -> bool.should(
+                wildcardQuery("championName", keyword),
+                wildcardQuery("championNameKo", keyword)
+        ).minimumShouldMatch("1")));
+    }
+
+    /**
      * 숫자 필드에 대한 exact term 쿼리를 생성합니다.
      *
      * @param field 필드명
@@ -242,7 +376,52 @@ public class SearchQueryService {
                 .value(FieldValue.of(value.longValue()))));
     }
 
+    /**
+     * 아레나는 사용자 표시상 하나로 다루되 내부적으로는 1700, 1710을 함께 조회합니다.
+     *
+     * @param queueId 사용자가 선택한 queueId
+     * @return queue 필터 쿼리
+     */
+    private Query queueIdQuery(Integer queueId) {
+        if (queueId == 1700) {
+            return Query.of(query -> query.bool(bool -> bool.should(
+                    termQuery("queueId", 1700),
+                    termQuery("queueId", 1710)
+            ).minimumShouldMatch("1")));
+        }
+        return termQuery("queueId", queueId);
+    }
+
+    private Query anyQueueQuery(List<Integer> queueIds) {
+        return Query.of(query -> query.bool(bool -> bool.should(
+                queueIds.stream()
+                        .filter(Objects::nonNull)
+                        .map(this::queueIdQuery)
+                        .toList()
+        ).minimumShouldMatch("1")));
+    }
+
+    private Query anyStringTermsQuery(String field, List<String> values) {
+        return Query.of(query -> query.bool(bool -> bool.should(
+                values.stream()
+                        .filter(this::hasText)
+                        .map(value -> termQuery(field, value))
+                        .toList()
+        ).minimumShouldMatch("1")));
+    }
+
+    private Query wildcardQuery(String field, String value) {
+        return Query.of(query -> query.wildcard(wildcard -> wildcard
+                .field(field)
+                .value(value)
+                .caseInsensitive(true)));
+    }
+
     private boolean hasText(String value) {
         return value != null && !value.isBlank();
+    }
+
+    private boolean hasValues(List<?> values) {
+        return values != null && !values.isEmpty();
     }
 }

@@ -1,0 +1,164 @@
+export type SummonerSyncRequest = {
+  gameName: string;
+  tagLine: string;
+  matchCount: number;
+};
+
+export type SummonerSyncResponse = {
+  puuid: string;
+  gameName: string;
+  tagLine: string;
+  requestedMatchCount: number;
+  savedMatchCount: number;
+  syncedAt: string;
+};
+
+export type SummonerProfileResponse = {
+  puuid: string;
+  gameName: string;
+  tagLine: string;
+  summonerId: string | null;
+  accountId: string | null;
+  profileIconId: number | null;
+  summonerLevel: number | null;
+  lastSyncedAt: string;
+};
+
+export type SummonerMatchSummaryResponse = {
+  matchId: string;
+  gameCreation: string;
+  queueId: number;
+  queueNameKo: string;
+  gameMode: string;
+  championName: string;
+  championKey: string;
+  championNameKo: string;
+  teamPosition: string | null;
+  teamPositionKo: string | null;
+  kills: number;
+  deaths: number;
+  assists: number;
+  win: boolean;
+};
+
+export type SummonerMatchListResponse = {
+  puuid: string;
+  count: number;
+  matches: SummonerMatchSummaryResponse[];
+};
+
+export type MatchParticipantResponse = {
+  puuid: string;
+  summonerName: string;
+  championName: string;
+  championKey: string;
+  championNameKo: string;
+  teamPosition: string | null;
+  teamPositionKo: string | null;
+  kills: number;
+  deaths: number;
+  assists: number;
+  win: boolean;
+  totalDamageDealtToChampions: number;
+  goldEarned: number;
+  totalMinionsKilled: number;
+  neutralMinionsKilled: number;
+  visionScore: number;
+  wardsPlaced: number;
+  wardsKilled: number;
+  champLevel: number;
+  item0: number;
+  item1: number;
+  item2: number;
+  item3: number;
+  item4: number;
+  item5: number;
+  item6: number;
+  itemNames: string[];
+  summoner1Id: number;
+  summoner2Id: number;
+  summonerSpellNames: string[];
+  primaryRune: number | null;
+  primaryRuneName: string | null;
+  secondaryRune: number | null;
+  secondaryRuneName: string | null;
+  totalDamageTaken: number;
+};
+
+export type MatchDetailResponse = {
+  matchId: string;
+  gameCreation: string;
+  gameDuration: number;
+  gameDurationText: string;
+  queueId: number;
+  queueNameKo: string;
+  gameMode: string;
+  gameVersion: string;
+  participants: MatchParticipantResponse[];
+};
+
+export type SearchMatchResponse = {
+  matchId: string;
+  puuid: string;
+  gameCreation: string;
+  queueId: number;
+  queueNameKo: string;
+  gameMode: string;
+  summonerName: string;
+  championName: string;
+  championKey: string;
+  championNameKo: string;
+  teamPosition: string | null;
+  teamPositionKo: string | null;
+  totalDamageDealtToChampions: number;
+  goldEarned: number;
+  totalMinionsKilled: number;
+  neutralMinionsKilled: number;
+  totalCs: number;
+  visionScore: number;
+  wardsPlaced: number;
+  wardsKilled: number;
+  champLevel: number;
+  itemIds: number[];
+  itemNames: string[];
+  summonerSpellIds: number[];
+  summonerSpellNames: string[];
+  primaryRune: number | null;
+  primaryRuneName: string | null;
+  secondaryRune: number | null;
+  secondaryRuneName: string | null;
+  kills: number;
+  deaths: number;
+  assists: number;
+  kda: number;
+  win: boolean;
+  totalDamageTaken: number;
+};
+
+export type SearchMatchListResponse = {
+  total: number;
+  page: number;
+  size: number;
+  matches: SearchMatchResponse[];
+};
+
+export type SearchFilterChampionOptionResponse = {
+  championName: string;
+  championNameKo: string;
+};
+
+export type SearchFilterPositionOptionResponse = {
+  teamPosition: string;
+  teamPositionKo: string;
+};
+
+export type SearchFilterModeOptionResponse = {
+  queueId: number;
+  queueNameKo: string;
+};
+
+export type SearchFilterOptionsResponse = {
+  champions: SearchFilterChampionOptionResponse[];
+  positions: SearchFilterPositionOptionResponse[];
+  modes: SearchFilterModeOptionResponse[];
+};

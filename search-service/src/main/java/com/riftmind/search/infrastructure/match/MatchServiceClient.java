@@ -45,6 +45,7 @@ public interface MatchServiceClient {
             String puuid,
             String summonerName,
             String championName,
+            String championKey,
             String championNameKo,
             String teamPosition,
             String teamPositionKo,

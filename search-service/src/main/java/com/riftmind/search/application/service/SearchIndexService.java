@@ -61,6 +61,7 @@ public class SearchIndexService {
                             match.gameMode(),
                             match.summonerName(),
                             match.championName(),
+                            match.championKey(),
                             match.championNameKo(),
                             match.teamPosition(),
                             match.teamPositionKo(),

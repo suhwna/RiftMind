@@ -46,6 +46,9 @@ public class MatchSearchDocument {
     private String championName;
 
     @Field(type = FieldType.Keyword)
+    private String championKey;
+
+    @Field(type = FieldType.Keyword)
     private String championNameKo;
 
     @Field(type = FieldType.Keyword)
@@ -136,6 +139,7 @@ public class MatchSearchDocument {
             String gameMode,
             String summonerName,
             String championName,
+            String championKey,
             String championNameKo,
             String teamPosition,
             String teamPositionKo,
@@ -172,6 +176,7 @@ public class MatchSearchDocument {
         this.gameMode = gameMode;
         this.summonerName = summonerName;
         this.championName = championName;
+        this.championKey = championKey;
         this.championNameKo = championNameKo;
         this.teamPosition = teamPosition;
         this.teamPositionKo = teamPositionKo;
@@ -209,6 +214,7 @@ public class MatchSearchDocument {
     public String getGameMode() { return gameMode; }
     public String getSummonerName() { return summonerName; }
     public String getChampionName() { return championName; }
+    public String getChampionKey() { return championKey; }
     public String getChampionNameKo() { return championNameKo; }
     public String getTeamPosition() { return teamPosition; }
     public String getTeamPositionKo() { return teamPositionKo; }

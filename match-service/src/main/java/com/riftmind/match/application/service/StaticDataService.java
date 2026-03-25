@@ -34,6 +34,7 @@ public class StaticDataService {
 
     private volatile DataDragonVersions versions;
     private volatile Map<String, String> championNames = Map.of();
+    private volatile Map<String, String> championAssetKeys = Map.of();
     private volatile Map<String, String> itemNames = Map.of();
     private volatile Map<String, String> summonerSpellNames = Map.of();
     private volatile Map<Integer, String> runeStyleNames = Map.of();
@@ -75,7 +76,21 @@ public class StaticDataService {
             return championName;
         }
         ensureChampionNamesLoaded();
-        return championNames.getOrDefault(championName, championName);
+        return championNames.getOrDefault(normalizeChampionIdentifier(championName), championName);
+    }
+
+    /**
+     * 챔피언 영문 식별값을 Data Dragon 아이콘 키로 변환합니다.
+     *
+     * @param championName 챔피언 영문 식별값
+     * @return Data Dragon 아이콘 키
+     */
+    public String getChampionAssetKey(String championName) {
+        if (!StringUtils.hasText(championName)) {
+            return championName;
+        }
+        ensureChampionNamesLoaded();
+        return championAssetKeys.getOrDefault(normalizeChampionIdentifier(championName), championName);
     }
 
     /**
@@ -189,13 +204,19 @@ public class StaticDataService {
                     currentVersions.locale());
             JsonNode champions = root.path("data");
             Map<String, String> loadedNames = new LinkedHashMap<>();
+            Map<String, String> loadedAssetKeys = new LinkedHashMap<>();
             champions.fields().forEachRemaining(entry -> loadedNames.put(
-                    entry.getValue().path("id").asText(entry.getKey()),
+                    normalizeChampionIdentifier(entry.getValue().path("id").asText(entry.getKey())),
                     entry.getValue().path("name").asText(entry.getKey())));
+            champions.fields().forEachRemaining(entry -> loadedAssetKeys.put(
+                    normalizeChampionIdentifier(entry.getValue().path("id").asText(entry.getKey())),
+                    entry.getValue().path("id").asText(entry.getKey())));
             championNames = Map.copyOf(loadedNames);
+            championAssetKeys = Map.copyOf(loadedAssetKeys);
         } catch (RuntimeException exception) {
             log.warn("Failed to load champion static data: {}", exception.getMessage());
             championNames = Map.of();
+            championAssetKeys = Map.of();
         }
     }
 
@@ -331,6 +352,16 @@ public class StaticDataService {
             return null;
         }
         return summonerSpellNames.getOrDefault(String.valueOf(summonerSpellId), String.valueOf(summonerSpellId));
+    }
+
+    /**
+     * 챔피언 식별값을 정규화합니다.
+     *
+     * @param championName 챔피언 영문 이름
+     * @return 정규화된 키
+     */
+    private String normalizeChampionIdentifier(String championName) {
+        return championName.replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
     }
 
     /**

@@ -24,6 +24,8 @@ public record SummonerMatchSummaryResponse(
         String gameMode,
         @Schema(description = "플레이 챔피언", example = "Ahri")
         String championName,
+        @Schema(description = "챔피언 아이콘 키", example = "Ahri")
+        String championKey,
         @Schema(description = "플레이 챔피언 한글 이름", example = "아리")
         String championNameKo,
         @Schema(description = "라인 포지션", example = "MIDDLE")

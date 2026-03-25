@@ -7,6 +7,7 @@
 - [Riot API Flow](./riot-api-flow.md)
 - [Summoner Service Design](../summoner-service-design.md)
 - [Match Service Design](../match-service-design.md)
+- [Frontend Screen Design](../frontend-screen-design.md)
 
 ---
 
@@ -21,6 +22,7 @@ RiftMind는 Riot API 기반 전적 데이터를 수집하고,
 - `summoner-service`: Riot ID 기반 소환사 프로필 동기화/조회
 - `match-service`: 매치 상세 수집, 저장, 조회
 - `search-service`: Elasticsearch 색인 및 조건 검색
+- `frontend`: React 기반 전적/회고 웹 클라이언트
 
 RiftMind의 차별화 방향은 단순 전적 조회가 아니라
 `개인 플레이 회고와 코칭을 위한 데이터 해석`이다.

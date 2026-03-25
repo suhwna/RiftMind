@@ -1,7 +1,9 @@
 package com.riftmind.search.api.controller;
 
 import com.riftmind.search.api.request.MatchIndexRequest;
+import com.riftmind.search.api.response.ChampionSuggestionListResponse;
 import com.riftmind.search.api.response.MatchIndexResponse;
+import com.riftmind.search.api.response.SearchFilterOptionsResponse;
 import com.riftmind.search.api.response.SearchMatchListResponse;
 import com.riftmind.search.application.service.SearchIndexService;
 import com.riftmind.search.application.service.SearchQueryService;
@@ -53,6 +55,34 @@ public class SearchController {
     }
 
     /**
+     * 챔피언 이름 자동완성 목록을 조회합니다.
+     *
+     * @param keyword 사용자 입력 키워드
+     * @param size 최대 자동완성 개수
+     * @return 자동완성 목록 응답
+     */
+    @Operation(summary = "챔피언 자동완성", description = "한글/영문 챔피언 이름 기준 자동완성 목록을 조회합니다.")
+    @GetMapping("/champions/suggestions")
+    public ChampionSuggestionListResponse suggestChampions(
+            @RequestParam String keyword,
+            @RequestParam(defaultValue = "8") @Min(1) @Max(20) int size
+    ) {
+        return searchQueryService.suggestChampions(keyword, size);
+    }
+
+    /**
+     * 현재 소환사 기준 고급 검색 필터 옵션을 조회합니다.
+     *
+     * @param puuid Riot PUUID
+     * @return 필터 옵션 응답
+     */
+    @Operation(summary = "검색 필터 옵션", description = "현재 소환사 기준으로 챔피언, 포지션, 게임 모드 필터 옵션을 조회합니다.")
+    @GetMapping("/filter-options")
+    public SearchFilterOptionsResponse getFilterOptions(@RequestParam String puuid) {
+        return searchQueryService.getFilterOptions(puuid);
+    }
+
+    /**
      * 다양한 조건으로 매치를 검색합니다.
      *
      * @param puuid Riot PUUID
@@ -82,9 +112,9 @@ public class SearchController {
     @GetMapping("/matches")
     public SearchMatchListResponse searchMatches(
             @RequestParam(required = false) String puuid,
-            @RequestParam(required = false) String championName,
-            @RequestParam(required = false) String teamPosition,
-            @RequestParam(required = false) Integer queueId,
+            @RequestParam(required = false) java.util.List<String> championNames,
+            @RequestParam(required = false) java.util.List<String> teamPositions,
+            @RequestParam(required = false) java.util.List<Integer> queueIds,
             @RequestParam(required = false) Boolean win,
             @RequestParam(required = false) String itemName,
             @RequestParam(required = false) String summonerSpellName,
@@ -105,9 +135,9 @@ public class SearchController {
     ) {
         return searchQueryService.searchMatches(
                 puuid,
-                championName,
-                teamPosition,
-                queueId,
+                championNames,
+                teamPositions,
+                queueIds,
                 win,
                 itemName,
                 summonerSpellName,
