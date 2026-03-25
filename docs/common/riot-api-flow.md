@@ -7,6 +7,7 @@
 - [Development Roadmap](./development-roadmap.md)
 - [Summoner Service Design](../summoner-service-design.md)
 - [Match Service Design](../match-service-design.md)
+- [Search Service Design](../search-service-design.md)
 
 ## 1. 목적
 
@@ -153,6 +154,12 @@ match-service
 3. 이후 `search-service` 가 원천 데이터를 색인
 4. 통계 / 메타 / AI 서비스가 이를 소비
 
+### search-service
+
+- `match-service` 검색 소스 API 호출
+- `match_participant` 기반 검색 문서 색인
+- Elasticsearch 조건 검색 API 제공
+
 ---
 
 ## 6. 구현 메모
@@ -166,4 +173,4 @@ match-service
 
 ## 7. 한 줄 요약
 
-> Riot ID로 시작해 `puuid`를 얻고, 이후 `match-service` 가 Match-V5 상세 데이터를 수집해 경기 원천 데이터를 저장한다.
+> Riot ID로 시작해 `puuid`를 얻고, 이후 `match-service` 가 Match-V5 상세 데이터를 저장하면 `search-service` 가 이를 participant 기준 검색 문서로 색인한다.

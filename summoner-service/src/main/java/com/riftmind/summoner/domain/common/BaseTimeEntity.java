@@ -40,20 +40,10 @@ public abstract class BaseTimeEntity {
         this.updatedAt = LocalDateTime.now();
     }
 
-    /**
-     * 엔티티 생성 시각을 반환합니다.
-     *
-     * @return 생성 시각
-     */
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
-    /**
-     * 엔티티 수정 시각을 반환합니다.
-     *
-     * @return 수정 시각
-     */
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }

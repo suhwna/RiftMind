@@ -6,6 +6,7 @@
 - [Development Roadmap](./common/development-roadmap.md)
 - [Riot API Flow](./common/riot-api-flow.md)
 - [Summoner Service Design](./summoner-service-design.md)
+- [Search Service Design](./search-service-design.md)
 
 ## 1. 목적
 
@@ -18,7 +19,7 @@
 ## 2. 저장소 운영 원칙
 
 - 현재 프로젝트는 `모노레포 멀티모듈` 구조로 관리한다.
-- `api-gateway`, `summoner-service`, `match-service`, `common` 은 하나의 Git 저장소 안에서 관리한다.
+- `api-gateway`, `summoner-service`, `match-service`, `search-service`, `common` 은 하나의 Git 저장소 안에서 관리한다.
 - MSA를 지향하더라도 현재 단계에서는 서비스별 Git 저장소로 분리하지 않는다.
 - 서비스별 브랜치를 상시 운영하지 않는다.
 - Maven wrapper는 루트에서 하나만 관리한다.
@@ -74,9 +75,15 @@
 - 저장된 경기/참가자 조회 API 제공
 - 표시용 정적 데이터 변환
 
+### search-service
+
+- Elasticsearch 색인
+- participant 기반 검색 문서 생성
+- 조건 검색 API 제공
+- 검색 전용 필드 구조 관리
+
 ### 추후 분리 대상
 
-- `search-service`: Elasticsearch 검색/통계
 - `ai-service`: LLM 분석/코칭
 - `ingest-service`: 비동기 수집/색인
 
@@ -84,6 +91,7 @@
 
 - `summoner-service` 에 검색/AI 책임을 같이 넣지 않는다.
 - `match-service` 에 소환사 프로필 책임을 같이 넣지 않는다.
+- `search-service` 에 Riot 직접 수집 책임을 같이 넣지 않는다.
 - 서비스 간 경계가 흐려지는 공용 도메인 설계를 피한다.
 
 ---
@@ -147,6 +155,15 @@
   - Riot API 흐름
   - 서비스별 설계 문서
 
+### Javadoc 작성 규칙
+
+- 공개 API는 Javadoc을 기본으로 작성한다.
+  - 대상: Controller, public Service 메서드, 외부 연동 Client
+- 설명은 `무엇을 한다`보다 `어떤 책임을 가지는지`와 `왜 필요한지`를 우선한다.
+- DTO `from(...)` 같은 단순 변환 메서드는 목적만 짧게 설명한다.
+- private helper는 로직이 복잡하거나 의도가 바로 드러나지 않을 때만 작성한다.
+- getter처럼 이름만으로 의미가 충분한 자명한 메서드에는 Javadoc을 반복 작성하지 않는다.
+
 ---
 
 ## 10. 커밋 규칙
@@ -184,7 +201,7 @@
 1. `summoner-service` / `match-service` 경계 유지
 2. Riot API 연동
 3. DB 저장/조회 안정화
-4. `search-service` 분리
+4. `search-service` 검색 정확도 / 문서 구조 안정화
 5. `ai-service` 분리
 6. Kafka/관측성 확장
 

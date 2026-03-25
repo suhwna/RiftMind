@@ -84,74 +84,34 @@ public class SummonerProfile extends BaseTimeEntity {
         this.lastSyncedAt = lastSyncedAt;
     }
 
-    /**
-     * PUUID를 반환합니다.
-     *
-     * @return Riot PUUID
-     */
     public String getPuuid() {
         return puuid;
     }
 
-    /**
-     * 라이엇 게임 이름을 반환합니다.
-     *
-     * @return 라이엇 게임 이름
-     */
     public String getGameName() {
         return gameName;
     }
 
-    /**
-     * 라이엇 태그 라인을 반환합니다.
-     *
-     * @return 라이엇 태그 라인
-     */
     public String getTagLine() {
         return tagLine;
     }
 
-    /**
-     * Riot summonerId를 반환합니다.
-     *
-     * @return Riot summonerId
-     */
     public String getSummonerId() {
         return summonerId;
     }
 
-    /**
-     * Riot accountId를 반환합니다.
-     *
-     * @return Riot accountId
-     */
     public String getAccountId() {
         return accountId;
     }
 
-    /**
-     * 프로필 아이콘 ID를 반환합니다.
-     *
-     * @return 프로필 아이콘 ID
-     */
     public Integer getProfileIconId() {
         return profileIconId;
     }
 
-    /**
-     * 소환사 레벨을 반환합니다.
-     *
-     * @return 소환사 레벨
-     */
     public Long getSummonerLevel() {
         return summonerLevel;
     }
 
-    /**
-     * 마지막 동기화 시각을 반환합니다.
-     *
-     * @return 마지막 동기화 시각
-     */
     public LocalDateTime getLastSyncedAt() {
         return lastSyncedAt;
     }

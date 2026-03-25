@@ -1,0 +1,23 @@
+server:
+  port: ${SERVER_PORT:18082}
+
+spring:
+  application:
+    name: search-service
+  elasticsearch:
+    uris: ${ELASTICSEARCH_URL:http://localhost:9200}
+
+management:
+  health:
+    elasticsearch:
+      enabled: false
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+riftmind:
+  match-service:
+    base-url: ${MATCH_SERVICE_URL:http://localhost:18081}

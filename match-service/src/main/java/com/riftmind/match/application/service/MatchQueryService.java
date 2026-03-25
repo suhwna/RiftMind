@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.riftmind.match.application.dto.MatchDetailView;
 import com.riftmind.match.application.dto.RecentMatchView;
+import com.riftmind.match.application.dto.SearchableMatchParticipantView;
 import com.riftmind.match.global.exception.ApiErrorCode;
 import com.riftmind.match.global.exception.ResourceNotFoundException;
 import com.riftmind.match.infrastructure.persistence.repository.MatchParticipantRepository;
@@ -45,6 +46,21 @@ public class MatchQueryService {
                 .findByPuuidOrderByMatchSummaryGameCreationDesc(puuid, PageRequest.of(0, count))
                 .stream()
                 .map(RecentMatchView::from)
+                .toList();
+    }
+
+    /**
+     * 검색 색인용 최근 참가자 목록을 조회합니다.
+     *
+     * @param puuid Riot PUUID
+     * @param count 조회할 경기 수
+     * @return 최근 참가자 목록
+     */
+    public List<SearchableMatchParticipantView> getRecentSearchSourceMatches(String puuid, int count) {
+        return matchParticipantRepository
+                .findByPuuidOrderByMatchSummaryGameCreationDesc(puuid, PageRequest.of(0, count))
+                .stream()
+                .map(SearchableMatchParticipantView::from)
                 .toList();
     }
 

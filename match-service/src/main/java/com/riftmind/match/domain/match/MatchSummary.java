@@ -89,65 +89,30 @@ public class MatchSummary extends BaseTimeEntity {
         }
     }
 
-    /**
-     * 매치 ID를 반환합니다.
-     *
-     * @return 매치 ID
-     */
     public String getMatchId() {
         return matchId;
     }
 
-    /**
-     * 게임 시작 시각을 반환합니다.
-     *
-     * @return 게임 시작 시각
-     */
     public LocalDateTime getGameCreation() {
         return gameCreation;
     }
 
-    /**
-     * 게임 길이를 반환합니다.
-     *
-     * @return 게임 길이
-     */
     public Integer getGameDuration() {
         return gameDuration;
     }
 
-    /**
-     * 큐 ID를 반환합니다.
-     *
-     * @return 큐 ID
-     */
     public Integer getQueueId() {
         return queueId;
     }
 
-    /**
-     * 게임 모드를 반환합니다.
-     *
-     * @return 게임 모드
-     */
     public String getGameMode() {
         return gameMode;
     }
 
-    /**
-     * 게임 버전을 반환합니다.
-     *
-     * @return 게임 버전
-     */
     public String getGameVersion() {
         return gameVersion;
     }
 
-    /**
-     * 참가자 목록을 반환합니다.
-     *
-     * @return 참가자 목록
-     */
     public List<MatchParticipant> getParticipants() {
         return Collections.unmodifiableList(participants);
     }

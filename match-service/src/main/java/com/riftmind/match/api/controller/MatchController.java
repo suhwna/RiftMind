@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.riftmind.match.api.request.MatchSyncRequest;
 import com.riftmind.match.api.response.MatchDetailResponse;
+import com.riftmind.match.api.response.MatchSearchSourceListResponse;
 import com.riftmind.match.api.response.MatchSyncResponse;
 import com.riftmind.match.api.response.SummonerMatchListResponse;
 import com.riftmind.match.application.service.MatchSyncService;
@@ -93,6 +94,19 @@ public class MatchController {
         return SummonerMatchListResponse.from(
                 puuid,
                 matchQueryService.getRecentMatches(puuid, count),
+                staticDataService);
+    }
+
+    @GetMapping("/search-source/by-puuid")
+    @Operation(summary = "검색 색인용 최근 참가자 조회", description = "저장된 최근 참가자 상세를 PUUID 기준으로 조회합니다.")
+    public MatchSearchSourceListResponse getRecentMatchesForSearch(
+            @Parameter(description = "Riot PUUID", example = "sample-puuid-value")
+            @RequestParam @NotBlank String puuid,
+            @Parameter(description = "조회할 경기 수", example = "20")
+            @RequestParam(defaultValue = "20") @Min(1) @Max(20) int count) {
+        return MatchSearchSourceListResponse.from(
+                puuid,
+                matchQueryService.getRecentSearchSourceMatches(puuid, count),
                 staticDataService);
     }
 }

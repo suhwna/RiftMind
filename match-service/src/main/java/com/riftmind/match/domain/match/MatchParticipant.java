@@ -185,272 +185,125 @@ public class MatchParticipant extends BaseTimeEntity {
         this.matchSummary = matchSummary;
     }
 
-    /**
-     * 참가자 식별자를 반환합니다.
-     *
-     * @return 참가자 식별자
-     */
     public Long getId() {
         return id;
     }
 
-    /**
-     * 연결된 매치 엔티티를 반환합니다.
-     *
-     * @return 매치 엔티티
-     */
     public MatchSummary getMatchSummary() {
         return matchSummary;
     }
 
-    /**
-     * PUUID를 반환합니다.
-     *
-     * @return Riot PUUID
-     */
     public String getPuuid() {
         return puuid;
     }
 
-    /**
-     * 참가자 Riot ID를 반환합니다.
-     *
-     * @return 참가자 Riot ID
-     */
     public String getSummonerName() {
         return summonerName;
     }
 
-    /**
-     * 챔피언 이름을 반환합니다.
-     *
-     * @return 챔피언 이름
-     */
     public String getChampionName() {
         return championName;
     }
 
-    /**
-     * 포지션을 반환합니다.
-     *
-     * @return 포지션
-     */
     public String getTeamPosition() {
         return teamPosition;
     }
 
-    /**
-     * 킬 수를 반환합니다.
-     *
-     * @return 킬 수
-     */
     public int getKills() {
         return kills;
     }
 
-    /**
-     * 데스 수를 반환합니다.
-     *
-     * @return 데스 수
-     */
     public int getDeaths() {
         return deaths;
     }
 
-    /**
-     * 어시스트 수를 반환합니다.
-     *
-     * @return 어시스트 수
-     */
     public int getAssists() {
         return assists;
     }
 
-    /**
-     * 승리 여부를 반환합니다.
-     *
-     * @return 승리 여부
-     */
     public boolean isWin() {
         return win;
     }
 
     /**
-     * 챔피언 대상 피해량을 반환합니다.
-     *
-     * @return 챔피언 대상 피해량
+     * nullable로 저장된 상세 전투 지표를 0 보정 후 반환합니다.
      */
     public int getTotalDamageDealtToChampions() {
         return zeroIfNull(totalDamageDealtToChampions);
     }
 
-    /**
-     * 획득한 골드를 반환합니다.
-     *
-     * @return 획득 골드
-     */
     public int getGoldEarned() {
         return zeroIfNull(goldEarned);
     }
 
-    /**
-     * 총 미니언 처치 수를 반환합니다.
-     *
-     * @return 총 미니언 처치 수
-     */
     public int getTotalMinionsKilled() {
         return zeroIfNull(totalMinionsKilled);
     }
 
-    /**
-     * 정글 몬스터 처치 수를 반환합니다.
-     *
-     * @return 정글 몬스터 처치 수
-     */
     public int getNeutralMinionsKilled() {
         return zeroIfNull(neutralMinionsKilled);
     }
 
-    /**
-     * 시야 점수를 반환합니다.
-     *
-     * @return 시야 점수
-     */
     public int getVisionScore() {
         return zeroIfNull(visionScore);
     }
 
-    /**
-     * 설치한 와드 수를 반환합니다.
-     *
-     * @return 설치 와드 수
-     */
     public int getWardsPlaced() {
         return zeroIfNull(wardsPlaced);
     }
 
-    /**
-     * 제거한 와드 수를 반환합니다.
-     *
-     * @return 제거 와드 수
-     */
     public int getWardsKilled() {
         return zeroIfNull(wardsKilled);
     }
 
-    /**
-     * 챔피언 레벨을 반환합니다.
-     *
-     * @return 챔피언 레벨
-     */
     public int getChampLevel() {
         return zeroIfNull(champLevel);
     }
 
-    /**
-     * 첫 번째 아이템 ID를 반환합니다.
-     *
-     * @return 첫 번째 아이템 ID
-     */
     public int getItem0() {
         return zeroIfNull(item0);
     }
 
-    /**
-     * 두 번째 아이템 ID를 반환합니다.
-     *
-     * @return 두 번째 아이템 ID
-     */
     public int getItem1() {
         return zeroIfNull(item1);
     }
 
-    /**
-     * 세 번째 아이템 ID를 반환합니다.
-     *
-     * @return 세 번째 아이템 ID
-     */
     public int getItem2() {
         return zeroIfNull(item2);
     }
 
-    /**
-     * 네 번째 아이템 ID를 반환합니다.
-     *
-     * @return 네 번째 아이템 ID
-     */
     public int getItem3() {
         return zeroIfNull(item3);
     }
 
-    /**
-     * 다섯 번째 아이템 ID를 반환합니다.
-     *
-     * @return 다섯 번째 아이템 ID
-     */
     public int getItem4() {
         return zeroIfNull(item4);
     }
 
-    /**
-     * 여섯 번째 아이템 ID를 반환합니다.
-     *
-     * @return 여섯 번째 아이템 ID
-     */
     public int getItem5() {
         return zeroIfNull(item5);
     }
 
-    /**
-     * 장신구 아이템 ID를 반환합니다.
-     *
-     * @return 장신구 아이템 ID
-     */
     public int getItem6() {
         return zeroIfNull(item6);
     }
 
-    /**
-     * 첫 번째 소환사 주문 ID를 반환합니다.
-     *
-     * @return 첫 번째 소환사 주문 ID
-     */
     public int getSummoner1Id() {
         return zeroIfNull(summoner1Id);
     }
 
-    /**
-     * 두 번째 소환사 주문 ID를 반환합니다.
-     *
-     * @return 두 번째 소환사 주문 ID
-     */
     public int getSummoner2Id() {
         return zeroIfNull(summoner2Id);
     }
 
-    /**
-     * 주 룬 ID를 반환합니다.
-     *
-     * @return 주 룬 ID
-     */
     public Integer getPrimaryRune() {
         return primaryRune;
     }
 
-    /**
-     * 보조 룬 ID를 반환합니다.
-     *
-     * @return 보조 룬 ID
-     */
     public Integer getSecondaryRune() {
         return secondaryRune;
     }
 
-    /**
-     * 총 받은 피해량을 반환합니다.
-     *
-     * @return 총 받은 피해량
-     */
     public int getTotalDamageTaken() {
         return zeroIfNull(totalDamageTaken);
     }

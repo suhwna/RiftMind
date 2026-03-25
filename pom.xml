@@ -20,6 +20,7 @@
         <module>common</module>
         <module>summoner-service</module>
         <module>match-service</module>
+        <module>search-service</module>
         <module>api-gateway</module>
     </modules>
     
