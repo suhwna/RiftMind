@@ -80,12 +80,17 @@ public class RestClientMatchServiceClient implements MatchServiceClient {
                             match.champLevel(),
                             match.itemIds(),
                             match.itemNames(),
+                            match.itemIconUrls(),
                             match.summonerSpellIds(),
                             match.summonerSpellNames(),
+                            match.summonerSpellIconUrls(),
                             match.primaryRune(),
                             match.primaryRuneName(),
+                            match.primaryRuneIconUrl(),
                             match.secondaryRune(),
                             match.secondaryRuneName(),
+                            match.secondaryRuneIconUrl(),
+                            match.interpretationTags(),
                             match.totalDamageTaken()
                     ))
                     .toList();
@@ -136,12 +141,17 @@ public class RestClientMatchServiceClient implements MatchServiceClient {
             int champLevel,
             List<Integer> itemIds,
             List<String> itemNames,
+            List<String> itemIconUrls,
             List<Integer> summonerSpellIds,
             List<String> summonerSpellNames,
+            List<String> summonerSpellIconUrls,
             Integer primaryRune,
             String primaryRuneName,
+            String primaryRuneIconUrl,
             Integer secondaryRune,
             String secondaryRuneName,
+            String secondaryRuneIconUrl,
+            List<String> interpretationTags,
             int totalDamageTaken
     ) {
     }

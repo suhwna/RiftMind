@@ -1,6 +1,7 @@
 package com.riftmind.match.application.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.riftmind.match.domain.match.MatchParticipant;
 
@@ -13,6 +14,7 @@ import com.riftmind.match.domain.match.MatchParticipant;
 public record RecentMatchView(
         String matchId,
         LocalDateTime gameCreation,
+        Integer gameDuration,
         Integer queueId,
         String gameMode,
         String championName,
@@ -20,6 +22,13 @@ public record RecentMatchView(
         int kills,
         int deaths,
         int assists,
+        int totalDamageDealtToChampions,
+        int goldEarned,
+        int totalMinionsKilled,
+        int neutralMinionsKilled,
+        int visionScore,
+        int wardsPlaced,
+        List<String> interpretationTags,
         boolean win) {
 
     /**
@@ -32,6 +41,7 @@ public record RecentMatchView(
         return new RecentMatchView(
                 participant.getMatchSummary().getMatchId(),
                 participant.getMatchSummary().getGameCreation(),
+                participant.getMatchSummary().getGameDuration(),
                 participant.getMatchSummary().getQueueId(),
                 participant.getMatchSummary().getGameMode(),
                 participant.getChampionName(),
@@ -39,6 +49,13 @@ public record RecentMatchView(
                 participant.getKills(),
                 participant.getDeaths(),
                 participant.getAssists(),
+                participant.getTotalDamageDealtToChampions(),
+                participant.getGoldEarned(),
+                participant.getTotalMinionsKilled(),
+                participant.getNeutralMinionsKilled(),
+                participant.getVisionScore(),
+                participant.getWardsPlaced(),
+                MatchInterpretationTagResolver.resolve(participant),
                 participant.isWin());
     }
 }

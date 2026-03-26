@@ -34,6 +34,8 @@ springdoc:
 riftmind:
   match-service:
     base-url: ${MATCH_SERVICE_URL:http://localhost:18081}
+  search-service:
+    base-url: ${SEARCH_SERVICE_URL:http://localhost:18082}
   riot:
     account-base-url: https://asia.api.riotgames.com
     summoner-base-url: https://kr.api.riotgames.com

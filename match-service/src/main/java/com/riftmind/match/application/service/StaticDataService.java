@@ -36,8 +36,13 @@ public class StaticDataService {
     private volatile Map<String, String> championNames = Map.of();
     private volatile Map<String, String> championAssetKeys = Map.of();
     private volatile Map<String, String> itemNames = Map.of();
+    private volatile Map<String, String> itemDescriptions = Map.of();
     private volatile Map<String, String> summonerSpellNames = Map.of();
+    private volatile Map<String, String> summonerSpellDescriptions = Map.of();
+    private volatile Map<String, String> summonerSpellAssetKeys = Map.of();
     private volatile Map<Integer, String> runeStyleNames = Map.of();
+    private volatile Map<Integer, String> runeStyleDescriptions = Map.of();
+    private volatile Map<Integer, String> runeStyleIconPaths = Map.of();
     private volatile Map<Integer, String> queueNames = Map.of();
 
     public StaticDataService(RestClient.Builder restClientBuilder, RiotApiProperties riotApiProperties) {
@@ -160,6 +165,34 @@ public class StaticDataService {
     }
 
     /**
+     * 아이템 ID 목록을 아이콘 URL 목록으로 변환합니다.
+     *
+     * @param itemIds 아이템 ID 목록
+     * @return 아이템 아이콘 URL 목록
+     */
+    public List<String> getItemIconUrls(List<Integer> itemIds) {
+        ensureItemNamesLoaded();
+        return itemIds.stream()
+                .map(this::getItemIconUrl)
+                .filter(StringUtils::hasText)
+                .toList();
+    }
+
+    /**
+     * 아이템 ID 목록을 설명 목록으로 변환합니다.
+     *
+     * @param itemIds 아이템 ID 목록
+     * @return 아이템 설명 목록
+     */
+    public List<String> getItemDescriptions(List<Integer> itemIds) {
+        ensureItemNamesLoaded();
+        return itemIds.stream()
+                .map(this::getItemDescription)
+                .filter(StringUtils::hasText)
+                .toList();
+    }
+
+    /**
      * 소환사 주문 ID 두 개를 한글 이름 목록으로 변환합니다.
      *
      * @param summoner1Id 첫 번째 소환사 주문 ID
@@ -170,6 +203,36 @@ public class StaticDataService {
         ensureSummonerSpellNamesLoaded();
         return List.of(summoner1Id, summoner2Id).stream()
                 .map(this::getSummonerSpellName)
+                .filter(StringUtils::hasText)
+                .toList();
+    }
+
+    /**
+     * 소환사 주문 ID 두 개를 아이콘 URL 목록으로 변환합니다.
+     *
+     * @param summoner1Id 첫 번째 소환사 주문 ID
+     * @param summoner2Id 두 번째 소환사 주문 ID
+     * @return 소환사 주문 아이콘 URL 목록
+     */
+    public List<String> getSummonerSpellIconUrls(Integer summoner1Id, Integer summoner2Id) {
+        ensureSummonerSpellNamesLoaded();
+        return List.of(summoner1Id, summoner2Id).stream()
+                .map(this::getSummonerSpellIconUrl)
+                .filter(StringUtils::hasText)
+                .toList();
+    }
+
+    /**
+     * 소환사 주문 ID 두 개를 설명 목록으로 변환합니다.
+     *
+     * @param summoner1Id 첫 번째 소환사 주문 ID
+     * @param summoner2Id 두 번째 소환사 주문 ID
+     * @return 소환사 주문 설명 목록
+     */
+    public List<String> getSummonerSpellDescriptions(Integer summoner1Id, Integer summoner2Id) {
+        ensureSummonerSpellNamesLoaded();
+        return List.of(summoner1Id, summoner2Id).stream()
+                .map(this::getSummonerSpellDescription)
                 .filter(StringUtils::hasText)
                 .toList();
     }
@@ -186,6 +249,38 @@ public class StaticDataService {
         }
         ensureRuneStyleNamesLoaded();
         return runeStyleNames.getOrDefault(runeStyleId, String.valueOf(runeStyleId));
+    }
+
+    /**
+     * 룬 스타일 ID를 아이콘 URL로 변환합니다.
+     *
+     * @param runeStyleId 룬 스타일 ID
+     * @return 룬 스타일 아이콘 URL
+     */
+    public String getRuneStyleIconUrl(Integer runeStyleId) {
+        if (runeStyleId == null) {
+            return null;
+        }
+        ensureRuneStyleNamesLoaded();
+        String iconPath = runeStyleIconPaths.get(runeStyleId);
+        if (!StringUtils.hasText(iconPath)) {
+            return null;
+        }
+        return buildDataDragonImageUrl("/cdn/img/" + iconPath);
+    }
+
+    /**
+     * 룬 스타일 ID를 설명으로 변환합니다.
+     *
+     * @param runeStyleId 룬 스타일 ID
+     * @return 룬 스타일 설명
+     */
+    public String getRuneStyleDescription(Integer runeStyleId) {
+        if (runeStyleId == null) {
+            return null;
+        }
+        ensureRuneStyleNamesLoaded();
+        return runeStyleDescriptions.get(runeStyleId);
     }
 
     /**
@@ -236,13 +331,19 @@ public class StaticDataService {
                     currentVersions.locale());
             JsonNode items = root.path("data");
             Map<String, String> loadedNames = new LinkedHashMap<>();
+            Map<String, String> loadedDescriptions = new LinkedHashMap<>();
             items.fields().forEachRemaining(entry -> loadedNames.put(
                     entry.getKey(),
                     entry.getValue().path("name").asText(entry.getKey())));
+            items.fields().forEachRemaining(entry -> loadedDescriptions.put(
+                    entry.getKey(),
+                    sanitizeDescription(entry.getValue().path("description").asText(null))));
             itemNames = Map.copyOf(loadedNames);
+            itemDescriptions = Map.copyOf(loadedDescriptions);
         } catch (RuntimeException exception) {
             log.warn("Failed to load item static data: {}", exception.getMessage());
             itemNames = Map.of();
+            itemDescriptions = Map.of();
         }
     }
 
@@ -262,13 +363,25 @@ public class StaticDataService {
                     currentVersions.locale());
             JsonNode summonerSpells = root.path("data");
             Map<String, String> loadedNames = new LinkedHashMap<>();
+            Map<String, String> loadedDescriptions = new LinkedHashMap<>();
+            Map<String, String> loadedAssetKeys = new LinkedHashMap<>();
             summonerSpells.fields().forEachRemaining(entry -> loadedNames.put(
                     entry.getValue().path("key").asText(entry.getKey()),
                     entry.getValue().path("name").asText(entry.getKey())));
+            summonerSpells.fields().forEachRemaining(entry -> loadedDescriptions.put(
+                    entry.getValue().path("key").asText(entry.getKey()),
+                    sanitizeDescription(entry.getValue().path("description").asText(null))));
+            summonerSpells.fields().forEachRemaining(entry -> loadedAssetKeys.put(
+                    entry.getValue().path("key").asText(entry.getKey()),
+                    entry.getValue().path("image").path("full").asText(null)));
             summonerSpellNames = Map.copyOf(loadedNames);
+            summonerSpellDescriptions = Map.copyOf(loadedDescriptions);
+            summonerSpellAssetKeys = Map.copyOf(loadedAssetKeys);
         } catch (RuntimeException exception) {
             log.warn("Failed to load summoner spell static data: {}", exception.getMessage());
             summonerSpellNames = Map.of();
+            summonerSpellDescriptions = Map.of();
+            summonerSpellAssetKeys = Map.of();
         }
     }
 
@@ -287,13 +400,25 @@ public class StaticDataService {
                     currentVersions.runeVersion(),
                     currentVersions.locale());
             Map<Integer, String> loadedNames = new LinkedHashMap<>();
+            Map<Integer, String> loadedDescriptions = new LinkedHashMap<>();
+            Map<Integer, String> loadedIconPaths = new LinkedHashMap<>();
             root.forEach(node -> loadedNames.put(
                     node.path("id").asInt(),
                     node.path("name").asText(String.valueOf(node.path("id").asInt()))));
+            root.forEach(node -> loadedDescriptions.put(
+                    node.path("id").asInt(),
+                    sanitizeDescription(node.path("longDesc").asText(defaultRuneStyleDescription(node.path("id").asInt())))));
+            root.forEach(node -> loadedIconPaths.put(
+                    node.path("id").asInt(),
+                    node.path("icon").asText(null)));
             runeStyleNames = Map.copyOf(loadedNames);
+            runeStyleDescriptions = Map.copyOf(loadedDescriptions);
+            runeStyleIconPaths = Map.copyOf(loadedIconPaths);
         } catch (RuntimeException exception) {
             log.warn("Failed to load rune static data: {}", exception.getMessage());
             runeStyleNames = Map.of();
+            runeStyleDescriptions = Map.of();
+            runeStyleIconPaths = Map.of();
         }
     }
 
@@ -342,6 +467,33 @@ public class StaticDataService {
     }
 
     /**
+     * 아이템 ID를 설명으로 변환합니다.
+     *
+     * @param itemId 아이템 ID
+     * @return 아이템 설명
+     */
+    private String getItemDescription(Integer itemId) {
+        if (itemId == null || itemId <= 0) {
+            return null;
+        }
+        return itemDescriptions.get(String.valueOf(itemId));
+    }
+
+    /**
+     * 아이템 ID를 아이콘 URL로 변환합니다.
+     *
+     * @param itemId 아이템 ID
+     * @return 아이템 아이콘 URL
+     */
+    private String getItemIconUrl(Integer itemId) {
+        if (itemId == null || itemId <= 0) {
+            return null;
+        }
+        DataDragonVersions currentVersions = resolveVersions();
+        return buildDataDragonImageUrl("/cdn/" + currentVersions.itemVersion() + "/img/item/" + itemId + ".png");
+    }
+
+    /**
      * 소환사 주문 ID를 한글 이름으로 변환합니다.
      *
      * @param summonerSpellId 소환사 주문 ID
@@ -355,6 +507,37 @@ public class StaticDataService {
     }
 
     /**
+     * 소환사 주문 ID를 아이콘 URL로 변환합니다.
+     *
+     * @param summonerSpellId 소환사 주문 ID
+     * @return 소환사 주문 아이콘 URL
+     */
+    private String getSummonerSpellIconUrl(Integer summonerSpellId) {
+        if (summonerSpellId == null || summonerSpellId <= 0) {
+            return null;
+        }
+        String assetKey = summonerSpellAssetKeys.get(String.valueOf(summonerSpellId));
+        if (!StringUtils.hasText(assetKey)) {
+            return null;
+        }
+        DataDragonVersions currentVersions = resolveVersions();
+        return buildDataDragonImageUrl("/cdn/" + currentVersions.summonerVersion() + "/img/spell/" + assetKey);
+    }
+
+    /**
+     * 소환사 주문 ID를 설명으로 변환합니다.
+     *
+     * @param summonerSpellId 소환사 주문 ID
+     * @return 소환사 주문 설명
+     */
+    private String getSummonerSpellDescription(Integer summonerSpellId) {
+        if (summonerSpellId == null || summonerSpellId <= 0) {
+            return null;
+        }
+        return summonerSpellDescriptions.get(String.valueOf(summonerSpellId));
+    }
+
+    /**
      * 챔피언 식별값을 정규화합니다.
      *
      * @param championName 챔피언 영문 이름
@@ -362,6 +545,49 @@ public class StaticDataService {
      */
     private String normalizeChampionIdentifier(String championName) {
         return championName.replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
+    }
+
+    /**
+     * 룬 스타일 기본 설명을 반환합니다.
+     *
+     * @param runeStyleId 룬 스타일 ID
+     * @return 기본 설명
+     */
+    private String defaultRuneStyleDescription(int runeStyleId) {
+        return switch (runeStyleId) {
+            case 8000 -> "지속 피해와 기본 공격 중심 전투에 강한 스타일";
+            case 8100 -> "폭발적인 피해와 대상 처치에 집중한 스타일";
+            case 8200 -> "스킬 활용과 주문 강화에 강한 스타일";
+            case 8300 -> "유틸리티와 변수 창출에 특화된 스타일";
+            case 8400 -> "내구력과 군중 제어 보강에 강한 스타일";
+            default -> null;
+        };
+    }
+
+    /**
+     * Data Dragon 설명 문자열에서 HTML을 제거합니다.
+     *
+     * @param rawDescription 원본 설명
+     * @return 정리된 설명
+     */
+    private String sanitizeDescription(String rawDescription) {
+        if (!StringUtils.hasText(rawDescription)) {
+            return null;
+        }
+
+        String sanitized = rawDescription
+                .replaceAll("<br\\s*/?>", "\n")
+                .replaceAll("<li>", "- ")
+                .replaceAll("</li>", "\n")
+                .replaceAll("<[^>]+>", " ")
+                .replace("&nbsp;", " ")
+                .replace("&quot;", "\"")
+                .replace("&#39;", "'")
+                .replace("&amp;", "&")
+                .replaceAll("[ \\t\\x0B\\f\\r]+", " ")
+                .replaceAll(" *\n *", "\n")
+                .trim();
+        return StringUtils.hasText(sanitized) ? sanitized : null;
     }
 
     /**
@@ -451,6 +677,20 @@ public class StaticDataService {
         }
 
         return response;
+    }
+
+    /**
+     * Data Dragon 이미지 절대 URL을 생성합니다.
+     *
+     * @param path base URL 이후 상대 경로
+     * @return 절대 URL
+     */
+    private String buildDataDragonImageUrl(String path) {
+        String baseUrl = riotApiProperties.getDataDragonBaseUrl();
+        if (baseUrl.endsWith("/")) {
+            return baseUrl.substring(0, baseUrl.length() - 1) + path;
+        }
+        return baseUrl + path;
     }
 
     /**

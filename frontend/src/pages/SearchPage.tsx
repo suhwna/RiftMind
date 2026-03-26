@@ -227,7 +227,8 @@ export function SearchPage() {
                         {match.championNameKo} · {match.summonerName}
                       </h3>
                       <p className="mt-1 text-sm text-slate-500">
-                        {match.teamPositionKo ?? "포지션 미상"} · {new Date(match.gameCreation).toLocaleString("ko-KR")}
+                        {match.teamPositionKo ? `${match.teamPositionKo} · ` : ""}
+                        {new Date(match.gameCreation).toLocaleString("ko-KR")}
                       </p>
                     </div>
                     <div className="text-right">

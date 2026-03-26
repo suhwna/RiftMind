@@ -16,6 +16,7 @@ import com.riftmind.summoner.infrastructure.persistence.repository.SyncHistoryRe
 import com.riftmind.summoner.infrastructure.riot.RiotAccountPayload;
 import com.riftmind.summoner.infrastructure.riot.RiotPlatformGateway;
 import com.riftmind.summoner.infrastructure.riot.RiotSummonerPayload;
+import com.riftmind.summoner.infrastructure.search.SearchServiceClient;
 
 /**
  * Riot API 호출과 내부 저장을 조합해 소환사 동기화를 수행합니다.
@@ -28,6 +29,7 @@ public class SummonerSyncService {
 
     private final RiotPlatformGateway riotPlatformGateway;
     private final MatchServiceClient matchServiceClient;
+    private final SearchServiceClient searchServiceClient;
     private final RiotApiProperties riotApiProperties;
     private final SummonerProfileRepository summonerProfileRepository;
     private final SyncHistoryRepository syncHistoryRepository;
@@ -35,11 +37,13 @@ public class SummonerSyncService {
     public SummonerSyncService(
             RiotPlatformGateway riotPlatformGateway,
             MatchServiceClient matchServiceClient,
+            SearchServiceClient searchServiceClient,
             RiotApiProperties riotApiProperties,
             SummonerProfileRepository summonerProfileRepository,
             SyncHistoryRepository syncHistoryRepository) {
         this.riotPlatformGateway = riotPlatformGateway;
         this.matchServiceClient = matchServiceClient;
+        this.searchServiceClient = searchServiceClient;
         this.riotApiProperties = riotApiProperties;
         this.summonerProfileRepository = summonerProfileRepository;
         this.syncHistoryRepository = syncHistoryRepository;
@@ -68,6 +72,7 @@ public class SummonerSyncService {
 
             MatchServiceClient.MatchSyncResult matchSyncResult =
                     matchServiceClient.syncMatches(puuid, normalizedCount);
+            searchServiceClient.indexRecentMatches(puuid, normalizedCount);
             int savedMatchCount = matchSyncResult.savedMatchCount();
 
             syncHistoryRepository.save(SyncHistory.success(puuid, normalizedCount, savedMatchCount));

@@ -25,6 +25,8 @@ public record MatchParticipantResponse(
         String championKey,
         @Schema(description = "챔피언 한글 이름", example = "아리")
         String championNameKo,
+        @Schema(description = "팀 ID", example = "100")
+        Integer teamId,
         @Schema(description = "라인 포지션", example = "MIDDLE")
         String teamPosition,
         @Schema(description = "라인 포지션 한글 이름", example = "미드")
@@ -69,20 +71,38 @@ public record MatchParticipantResponse(
         int item6,
         @Schema(description = "구매 아이템 이름 목록")
         List<String> itemNames,
+        @Schema(description = "구매 아이템 아이콘 URL 목록")
+        List<String> itemIconUrls,
+        @Schema(description = "구매 아이템 설명 목록")
+        List<String> itemDescriptions,
         @Schema(description = "소환사 주문 1 ID", example = "4")
         int summoner1Id,
         @Schema(description = "소환사 주문 2 ID", example = "12")
         int summoner2Id,
         @Schema(description = "소환사 주문 이름 목록")
         List<String> summonerSpellNames,
+        @Schema(description = "소환사 주문 아이콘 URL 목록")
+        List<String> summonerSpellIconUrls,
+        @Schema(description = "소환사 주문 설명 목록")
+        List<String> summonerSpellDescriptions,
         @Schema(description = "주 룬 스타일 ID", example = "8100")
         Integer primaryRune,
         @Schema(description = "주 룬 스타일 이름", example = "지배")
         String primaryRuneName,
+        @Schema(description = "주 룬 스타일 아이콘 URL")
+        String primaryRuneIconUrl,
+        @Schema(description = "주 룬 스타일 설명")
+        String primaryRuneDescription,
         @Schema(description = "보조 룬 스타일 ID", example = "8300")
         Integer secondaryRune,
         @Schema(description = "보조 룬 스타일 이름", example = "영감")
         String secondaryRuneName,
+        @Schema(description = "보조 룬 스타일 아이콘 URL")
+        String secondaryRuneIconUrl,
+        @Schema(description = "보조 룬 스타일 설명")
+        String secondaryRuneDescription,
+        @Schema(description = "경기 해석 태그 목록")
+        List<String> interpretationTags,
         @Schema(description = "총 받은 피해량", example = "18422")
         int totalDamageTaken) {
 
@@ -100,6 +120,7 @@ public record MatchParticipantResponse(
                 view.championName(),
                 staticDataService.getChampionAssetKey(view.championName()),
                 staticDataService.getChampionNameKo(view.championName()),
+                view.teamId(),
                 view.teamPosition(),
                 staticDataService.getTeamPositionKo(view.teamPosition()),
                 view.kills(),
@@ -129,13 +150,36 @@ public record MatchParticipantResponse(
                         view.item4(),
                         view.item5(),
                         view.item6())),
+                staticDataService.getItemIconUrls(List.of(
+                        view.item0(),
+                        view.item1(),
+                        view.item2(),
+                        view.item3(),
+                        view.item4(),
+                        view.item5(),
+                        view.item6())),
+                staticDataService.getItemDescriptions(List.of(
+                        view.item0(),
+                        view.item1(),
+                        view.item2(),
+                        view.item3(),
+                        view.item4(),
+                        view.item5(),
+                        view.item6())),
                 view.summoner1Id(),
                 view.summoner2Id(),
                 staticDataService.getSummonerSpellNames(view.summoner1Id(), view.summoner2Id()),
+                staticDataService.getSummonerSpellIconUrls(view.summoner1Id(), view.summoner2Id()),
+                staticDataService.getSummonerSpellDescriptions(view.summoner1Id(), view.summoner2Id()),
                 view.primaryRune(),
                 staticDataService.getRuneStyleName(view.primaryRune()),
+                staticDataService.getRuneStyleIconUrl(view.primaryRune()),
+                staticDataService.getRuneStyleDescription(view.primaryRune()),
                 view.secondaryRune(),
                 staticDataService.getRuneStyleName(view.secondaryRune()),
+                staticDataService.getRuneStyleIconUrl(view.secondaryRune()),
+                staticDataService.getRuneStyleDescription(view.secondaryRune()),
+                view.interpretationTags(),
                 view.totalDamageTaken());
     }
 }

@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { MatchSummaryCard } from "../components/MatchSummaryCard";
 import { SectionCard } from "../components/SectionCard";
+import { getChampionPortraitUrl } from "../lib/assets";
 import { getRecentMatches, getSearchFilterOptions, getSummonerByPuuid, searchMatches, syncSummoner } from "../lib/api";
 import type { SearchMatchResponse, SummonerMatchSummaryResponse } from "../types/api";
 
@@ -18,7 +19,6 @@ type DashboardFilterState = {
   teamPositions: string[];
   queueIds: string[];
   win: string;
-  minKda: string;
 };
 
 const initialFilterState: DashboardFilterState = {
@@ -26,7 +26,6 @@ const initialFilterState: DashboardFilterState = {
   teamPositions: [],
   queueIds: [],
   win: "",
-  minKda: "",
 };
 
 export function SummonerDashboardPage() {
@@ -56,14 +55,13 @@ export function SummonerDashboardPage() {
   });
 
   const hasActiveFilters = useMemo(
-    () =>
-      filters.championNames.length > 0 ||
-      filters.teamPositions.length > 0 ||
-      filters.queueIds.length > 0 ||
-      filters.win.trim().length > 0 ||
-      filters.minKda.trim().length > 0,
-    [filters],
-  );
+      () =>
+        filters.championNames.length > 0 ||
+        filters.teamPositions.length > 0 ||
+        filters.queueIds.length > 0 ||
+        filters.win.trim().length > 0,
+      [filters],
+    );
 
   const searchQueryString = useMemo(() => {
     const nextSearchParams = new URLSearchParams();
@@ -73,16 +71,12 @@ export function SummonerDashboardPage() {
     filters.teamPositions.forEach((value) => nextSearchParams.append("teamPositions", value));
     filters.queueIds.forEach((value) => nextSearchParams.append("queueIds", value));
 
-    if (filters.win.trim()) {
-      nextSearchParams.set("win", filters.win.trim());
-    }
+      if (filters.win.trim()) {
+        nextSearchParams.set("win", filters.win.trim());
+      }
 
-    if (filters.minKda.trim()) {
-      nextSearchParams.set("minKda", filters.minKda.trim());
-    }
-
-    return nextSearchParams.toString();
-  }, [filters, puuid]);
+      return nextSearchParams.toString();
+    }, [filters, puuid]);
 
   const filteredMatchesQuery = useInfiniteQuery({
     queryKey: ["dashboard-filtered-matches", searchQueryString],
@@ -105,6 +99,23 @@ export function SummonerDashboardPage() {
   const displayedMatches = hasActiveFilters ? filteredMatches.map(toSummaryMatch) : matches;
   const displayedTotal = hasActiveFilters ? filteredMatchesQuery.data?.pages[0]?.total ?? 0 : matches.length;
   const wins = displayedMatches.filter((match) => match.win).length;
+  const recentWinRate = matches.length > 0 ? Math.round((matches.filter((match) => match.win).length / matches.length) * 100) : 0;
+  const averageKda = matches.length > 0
+    ? matches.reduce((sum, match) => {
+        const kda = match.deaths === 0 ? match.kills + match.assists : (match.kills + match.assists) / match.deaths;
+        return sum + kda;
+      }, 0) / matches.length
+    : 0;
+  const mostPlayedChampion = useMemo(() => {
+    const counts = new Map<string, { nameKo: string; count: number }>();
+    for (const match of matches) {
+      const current = counts.get(match.championName) ?? { nameKo: match.championNameKo, count: 0 };
+      current.count += 1;
+      counts.set(match.championName, current);
+    }
+
+    return Array.from(counts.values()).sort((left, right) => right.count - left.count)[0] ?? null;
+  }, [matches]);
   const hasMoreMatches = hasActiveFilters
     ? Boolean(filteredMatchesQuery.hasNextPage)
     : requestedCount < MAX_MATCH_COUNT && matches.length >= requestedCount;
@@ -201,49 +212,64 @@ export function SummonerDashboardPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <SectionCard
-        title=""
-        action={
-          <button
-            type="button"
-            onClick={handleRefresh}
-            disabled={!profileQuery.data || syncMutation.isPending}
-            className="inline-flex items-center gap-2 rounded-full bg-tide px-4 py-2 text-sm font-medium text-ink transition hover:bg-brass disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            <RefreshCw className={`h-4 w-4 ${syncMutation.isPending ? "animate-spin" : ""}`} />
-            {syncMutation.isPending ? "동기화 중..." : "동기화"}
-          </button>
-        }
-      >
-        <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="flex items-center gap-5">
-            <div className="h-24 w-24 overflow-hidden rounded-[22px] border border-white/10 bg-[#0b1020]">
-              {profileQuery.data?.profileIconId ? (
-                <img
-                  src={getProfileIconUrl(profileQuery.data.profileIconId)}
-                  alt={`${profileQuery.data.gameName} 프로필 아이콘`}
-                  className="h-full w-full object-cover"
-                />
-              ) : null}
+      <div className="space-y-6">
+        <SectionCard title="">
+          <div className="grid gap-4 lg:grid-cols-[1.35fr_0.65fr]">
+            <div className="border border-slate-800 bg-[#0b1220]">
+              <div className="flex items-center justify-between gap-3 border-b border-slate-800 px-4 py-2.5">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-tide">Summoner profile</p>
+                <button
+                  type="button"
+                  onClick={handleRefresh}
+                  disabled={!profileQuery.data || syncMutation.isPending}
+                  className="inline-flex items-center gap-2 border border-tide/40 bg-[#171d27] px-3 py-2 text-sm font-medium text-tide transition hover:bg-[#1d2531] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <RefreshCw className={`h-4 w-4 ${syncMutation.isPending ? "animate-spin" : ""}`} />
+                  {syncMutation.isPending ? "동기화 중..." : "동기화"}
+                </button>
+              </div>
+              <div className="grid gap-4 px-4 py-3 md:grid-cols-[80px_1fr] md:items-center">
+                <div className="h-20 w-20 overflow-hidden border border-slate-700 bg-[#0b1220]">
+                  {profileQuery.data?.profileIconId ? (
+                    <img
+                      src={getProfileIconUrl(profileQuery.data.profileIconId)}
+                      alt={`${profileQuery.data.gameName} 프로필 아이콘`}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : null}
+                </div>
+                <div className="min-w-0 space-y-3">
+                  <div>
+                    <h2 className="text-[1.7rem] font-semibold tracking-[-0.05em] text-white">
+                      {profileQuery.data ? `${profileQuery.data.gameName}#${profileQuery.data.tagLine}` : "소환사 대시보드"}
+                    </h2>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-400">
+                    <span>레벨 {profileQuery.data?.summonerLevel ?? "-"}</span>
+                    <span className="hidden h-3 w-px bg-slate-700 sm:block" />
+                    <span>최근 {matches.length}경기 기준</span>
+                  </div>
+                  <p className="text-xs text-slate-500">
+                    마지막 동기화 {profileQuery.data ? new Date(profileQuery.data.lastSyncedAt).toLocaleString("ko-KR") : "-"}
+                  </p>
+                </div>
+              </div>
             </div>
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-tide">Summoner report</p>
-              <h2 className="mt-2 text-3xl font-semibold tracking-[-0.05em] text-white">
-                {profileQuery.data ? `${profileQuery.data.gameName}#${profileQuery.data.tagLine}` : "소환사 대시보드"}
-              </h2>
-              <p className="mt-3 text-sm text-slate-400">
-                레벨 {profileQuery.data?.summonerLevel ?? "-"} · 최근 {matches.length}경기 기준
-              </p>
-            </div>
-          </div>
 
-          <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-1">
-            <StatPanel label="불러온 경기" value={String(matches.length)} />
-            <StatPanel label="최근 승리" value={String(wins)} />
-            <StatPanel label="마지막 동기화" value={profileQuery.data ? new Date(profileQuery.data.lastSyncedAt).toLocaleString("ko-KR") : "-"} compact />
+            <div className="border border-slate-800 bg-[#0b1220]">
+              <div className="border-b border-slate-800 px-4 py-2.5">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-tide">Recent indicators</p>
+              </div>
+              <div className="divide-y divide-slate-800">
+                <StatRow label="최근 승률" value={`${recentWinRate}%`} />
+                <StatRow label="평균 KDA" value={averageKda > 0 ? averageKda.toFixed(2) : "-"} />
+                <StatRow
+                  label="많이 한 챔피언"
+                  value={mostPlayedChampion ? `${mostPlayedChampion.nameKo} · ${mostPlayedChampion.count}판` : "-"}
+                />
+              </div>
+            </div>
           </div>
-        </div>
 
         {syncMutation.isError ? (
           <p className="mt-5 rounded-2xl bg-rose-950/40 px-4 py-3 text-sm text-rose-200">
@@ -253,10 +279,10 @@ export function SummonerDashboardPage() {
       </SectionCard>
 
       <SectionCard title="경기 목록" description={hasActiveFilters ? `${displayedTotal}경기 필터링 중` : "최근 경기를 시간순으로 확인합니다."}>
-        <div className="mb-6 rounded-[20px] border border-white/8 bg-[#0b1020] p-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="mb-6 border border-slate-800 bg-[#0b1220]">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 px-4 py-3">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/8 bg-[#131a28] text-tide">
+              <div className="flex h-10 w-10 items-center justify-center border border-slate-700 bg-[#111827] text-tide">
                 <Filter className="h-4 w-4" />
               </div>
               <div>
@@ -271,7 +297,7 @@ export function SummonerDashboardPage() {
               <button
                 type="button"
                 onClick={() => setIsFilterOpen((current) => !current)}
-                className="inline-flex items-center gap-2 rounded-full border border-white/8 bg-[#131a28] px-4 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/5"
+                className="inline-flex items-center gap-2 border border-slate-700 bg-[#111827] px-4 py-2 text-sm font-medium text-slate-300 transition hover:bg-[#182233]"
               >
                 {isFilterOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 {isFilterOpen ? "필터 접기" : "필터 보기"}
@@ -280,7 +306,7 @@ export function SummonerDashboardPage() {
                 type="button"
                 onClick={clearFilters}
                 disabled={!hasActiveFilters}
-                className="rounded-full border border-white/8 bg-[#131a28] px-4 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/5 disabled:cursor-not-allowed disabled:text-slate-500"
+                className="border border-slate-700 bg-[#111827] px-4 py-2 text-sm font-medium text-slate-300 transition hover:bg-[#182233] disabled:cursor-not-allowed disabled:text-slate-500"
               >
                 초기화
               </button>
@@ -288,11 +314,22 @@ export function SummonerDashboardPage() {
           </div>
 
           {hasActiveFilters ? (
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="border-b border-slate-800 px-4 py-3">
+              <div className="flex flex-wrap gap-2">
               {filters.championNames.map((value) => {
                 const champion = filterOptionsQuery.data?.champions.find((item) => item.championName === value);
                 return (
-                  <ActiveChip key={value} onRemove={() => toggleSelection("championNames", value)}>
+                  <ActiveChip
+                    key={value}
+                    onRemove={() => toggleSelection("championNames", value)}
+                    icon={champion?.championKey ? (
+                      <img
+                        src={getChampionPortraitUrl(champion.championKey, champion.championName)}
+                        alt={champion.championNameKo}
+                        className="h-4 w-4 object-cover"
+                      />
+                    ) : null}
+                  >
                     {champion?.championNameKo ?? value}
                   </ActiveChip>
                 );
@@ -313,39 +350,42 @@ export function SummonerDashboardPage() {
                   </ActiveChip>
                 );
               })}
-              {filters.win ? (
-                <ActiveChip onRemove={() => setFilters((current) => ({ ...current, win: "" }))}>
-                  {filters.win === "true" ? "승리" : "패배"}
-                </ActiveChip>
-              ) : null}
-              {filters.minKda ? (
-                <ActiveChip onRemove={() => setFilters((current) => ({ ...current, minKda: "" }))}>
-                  KDA {filters.minKda}+
-                </ActiveChip>
-              ) : null}
-            </div>
-          ) : null}
+                {filters.win ? (
+                  <ActiveChip onRemove={() => setFilters((current) => ({ ...current, win: "" }))}>
+                    {filters.win === "true" ? "승리" : "패배"}
+                  </ActiveChip>
+                ) : null}
+                </div>
+              </div>
+            ) : null}
 
           {isFilterOpen ? (
-            <div className="mt-5 space-y-4">
+            <div className="space-y-4 px-4 py-4">
               <FilterSection title="챔피언">
                 {filterOptionsQuery.data?.champions.map((champion) => (
                   <ToggleChip
                     key={champion.championName}
                     selected={filters.championNames.includes(champion.championName)}
                     onClick={() => toggleSelection("championNames", champion.championName)}
+                    icon={
+                      <img
+                        src={getChampionPortraitUrl(champion.championKey, champion.championName)}
+                        alt={champion.championNameKo}
+                        className="h-4 w-4 object-cover"
+                      />
+                    }
                   >
                     {champion.championNameKo}
                   </ToggleChip>
                 ))}
               </FilterSection>
 
-              <div className="grid gap-4 lg:grid-cols-2">
-                <FilterSection title="포지션">
-                  {filterOptionsQuery.data?.positions.map((position) => (
-                    <ToggleChip
-                      key={position.teamPosition}
-                      selected={filters.teamPositions.includes(position.teamPosition)}
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <FilterSection title="포지션">
+                    {filterOptionsQuery.data?.positions.map((position) => (
+                      <ToggleChip
+                        key={position.teamPosition}
+                        selected={filters.teamPositions.includes(position.teamPosition)}
                       onClick={() => toggleSelection("teamPositions", position.teamPosition)}
                     >
                       {position.teamPositionKo}
@@ -361,38 +401,38 @@ export function SummonerDashboardPage() {
                       onClick={() => toggleSelection("queueIds", String(mode.queueId))}
                     >
                       {mode.queueNameKo}
-                    </ToggleChip>
-                  ))}
+                      </ToggleChip>
+                    ))}
+                  </FilterSection>
+                </div>
+
+                <FilterSection title="승패">
+                  <ToggleChip
+                    selected={filters.win === "true"}
+                    onClick={() =>
+                      setFilters((current) => ({
+                        ...current,
+                        win: current.win === "true" ? "" : "true",
+                      }))
+                    }
+                  >
+                    승리
+                  </ToggleChip>
+                  <ToggleChip
+                    selected={filters.win === "false"}
+                    onClick={() =>
+                      setFilters((current) => ({
+                        ...current,
+                        win: current.win === "false" ? "" : "false",
+                      }))
+                    }
+                  >
+                    패배
+                  </ToggleChip>
                 </FilterSection>
               </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <label className="block">
-                  <span className="mb-2 block text-sm font-medium text-slate-300">승패</span>
-                  <select
-                    value={filters.win}
-                    onChange={(event) => setFilters((current) => ({ ...current, win: event.target.value }))}
-                    className="w-full rounded-[18px] border border-white/8 bg-[#131a28] px-4 py-3 text-white outline-none transition focus:border-tide"
-                  >
-                    <option value="">전체</option>
-                    <option value="true">승리</option>
-                    <option value="false">패배</option>
-                  </select>
-                </label>
-
-                <label className="block">
-                  <span className="mb-2 block text-sm font-medium text-slate-300">최소 KDA</span>
-                  <input
-                    value={filters.minKda}
-                    onChange={(event) => setFilters((current) => ({ ...current, minKda: event.target.value }))}
-                    placeholder="예: 3"
-                    className="w-full rounded-[18px] border border-white/8 bg-[#131a28] px-4 py-3 text-white outline-none transition placeholder:text-slate-500 focus:border-tide"
-                  />
-                </label>
-              </div>
-            </div>
-          ) : null}
-        </div>
+            ) : null}
+          </div>
 
         {filterOptionsQuery.isLoading ? <p className="mb-4 text-sm text-slate-400">필터를 준비하는 중입니다...</p> : null}
         {filterOptionsQuery.isError ? (
@@ -409,7 +449,7 @@ export function SummonerDashboardPage() {
 
         {displayedMatches.length > 0 ? (
           <>
-            <div className="grid gap-4 lg:grid-cols-2">
+            <div className="space-y-3">
               {displayedMatches.map((match) => (
                 <MatchSummaryCard key={match.matchId} puuid={puuid} match={match} />
               ))}
@@ -426,7 +466,7 @@ export function SummonerDashboardPage() {
         ) : null}
 
         {!isLoadingMatches && !matchesError && displayedMatches.length === 0 ? (
-          <p className="rounded-[20px] border border-white/8 bg-[#0b1020] px-4 py-6 text-center text-sm text-slate-400">
+          <p className="border border-slate-800 bg-[#0b1220] px-4 py-6 text-center text-sm text-slate-400">
             {hasActiveFilters ? "조건에 맞는 경기가 없습니다." : "최근 경기 데이터가 없습니다."}
           </p>
         ) : null}
@@ -435,17 +475,16 @@ export function SummonerDashboardPage() {
   );
 }
 
-type StatPanelProps = {
+type StatRowProps = {
   label: string;
   value: string;
-  compact?: boolean;
 };
 
-function StatPanel({ label, value, compact = false }: StatPanelProps) {
+function StatRow({ label, value }: StatRowProps) {
   return (
-    <div className="rounded-[18px] border border-white/8 bg-[#0b1020] p-4">
+    <div className="flex items-center justify-between gap-4 px-4 py-4">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">{label}</p>
-      <p className={`mt-3 font-semibold tracking-[-0.03em] text-white ${compact ? "text-sm leading-6" : "text-2xl"}`}>{value}</p>
+      <p className="text-right text-sm font-semibold text-white">{value}</p>
     </div>
   );
 }
@@ -459,7 +498,7 @@ function FilterSection({ title, children }: FilterSectionProps) {
   return (
     <div className="space-y-3">
       <span className="block text-sm font-medium text-slate-300">{title}</span>
-      <div className="flex flex-wrap gap-2 rounded-[18px] border border-white/8 bg-[#131a28] p-3">{children}</div>
+      <div className="flex flex-wrap gap-2 border border-slate-800 bg-[#111827] p-3">{children}</div>
     </div>
   );
 }
@@ -468,18 +507,20 @@ type ToggleChipProps = {
   selected: boolean;
   onClick: () => void;
   children: string;
+  icon?: ReactNode;
 };
 
-function ToggleChip({ selected, onClick, children }: ToggleChipProps) {
+function ToggleChip({ selected, onClick, children, icon }: ToggleChipProps) {
   return (
     <button
       type="button"
       onClick={onClick}
       className={[
-        "rounded-full border px-3 py-2 text-sm font-medium transition",
-        selected ? "border-tide bg-tide text-ink" : "border-white/8 bg-[#0b1020] text-slate-300 hover:bg-white/5",
+        "inline-flex items-center gap-2 border px-3 py-2 text-sm font-medium transition",
+        selected ? "border-tide bg-tide text-ink" : "border-slate-700 bg-[#0b1220] text-slate-300 hover:bg-[#182233]",
       ].join(" ")}
     >
+      {icon}
       {children}
     </button>
   );
@@ -488,15 +529,17 @@ function ToggleChip({ selected, onClick, children }: ToggleChipProps) {
 type ActiveChipProps = {
   children: ReactNode;
   onRemove: () => void;
+  icon?: ReactNode;
 };
 
-function ActiveChip({ children, onRemove }: ActiveChipProps) {
+function ActiveChip({ children, onRemove, icon }: ActiveChipProps) {
   return (
     <button
       type="button"
       onClick={onRemove}
-      className="rounded-full border border-tide/40 bg-tide/12 px-3 py-1.5 text-sm font-medium text-tide transition hover:bg-tide/18"
+      className="inline-flex items-center gap-2 border border-tide/40 bg-[#151a20] px-3 py-1.5 text-sm font-medium text-tide transition hover:bg-[#1a212b]"
     >
+      {icon}
       {children}
     </button>
   );
@@ -506,6 +549,7 @@ function toSummaryMatch(match: SearchMatchResponse): SummonerMatchSummaryRespons
   return {
     matchId: match.matchId,
     gameCreation: match.gameCreation,
+    gameDuration: 0,
     queueId: match.queueId,
     queueNameKo: match.queueNameKo,
     gameMode: match.gameMode,
@@ -517,6 +561,13 @@ function toSummaryMatch(match: SearchMatchResponse): SummonerMatchSummaryRespons
     kills: match.kills,
     deaths: match.deaths,
     assists: match.assists,
+    totalDamageDealtToChampions: match.totalDamageDealtToChampions,
+    goldEarned: match.goldEarned,
+    totalMinionsKilled: match.totalMinionsKilled,
+    neutralMinionsKilled: match.neutralMinionsKilled,
+    visionScore: match.visionScore,
+    wardsPlaced: match.wardsPlaced,
+    interpretationTags: match.interpretationTags,
     win: match.win,
   };
 }

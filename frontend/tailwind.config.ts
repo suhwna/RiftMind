@@ -17,7 +17,7 @@ export default {
         card: "0 16px 36px rgba(0, 0, 0, 0.22)"
       },
       fontFamily: {
-        sans: ["Pretendard Variable", "SUIT Variable", "system-ui", "sans-serif"]
+        sans: ["Rix Modern Gothic", "system-ui", "sans-serif"]
       }
     }
   },

@@ -3,6 +3,7 @@ package com.riftmind.match.application.dto;
 import com.riftmind.match.domain.match.MatchParticipant;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 검색 색인용 매치 참가자 DTO입니다.
@@ -42,6 +43,7 @@ public record SearchableMatchParticipantView(
         int summoner2Id,
         Integer primaryRune,
         Integer secondaryRune,
+        List<String> interpretationTags,
         int totalDamageTaken) {
 
     /**
@@ -83,6 +85,7 @@ public record SearchableMatchParticipantView(
                 participant.getSummoner2Id(),
                 participant.getPrimaryRune(),
                 participant.getSecondaryRune(),
+                MatchInterpretationTagResolver.resolve(participant),
                 participant.getTotalDamageTaken());
     }
 }

@@ -39,6 +39,9 @@ public class MatchParticipant extends BaseTimeEntity {
     @Column(name = "champion_name", length = 50, nullable = false)
     private String championName;
 
+    @Column(name = "team_id")
+    private Integer teamId;
+
     @Column(name = "team_position", length = 20)
     private String teamPosition;
 
@@ -121,6 +124,7 @@ public class MatchParticipant extends BaseTimeEntity {
             String puuid,
             String summonerName,
             String championName,
+            Integer teamId,
             String teamPosition,
             int kills,
             int deaths,
@@ -149,6 +153,7 @@ public class MatchParticipant extends BaseTimeEntity {
         this.puuid = puuid;
         this.summonerName = summonerName;
         this.championName = championName;
+        this.teamId = teamId;
         this.teamPosition = teamPosition;
         this.kills = kills;
         this.deaths = deaths;
@@ -203,6 +208,10 @@ public class MatchParticipant extends BaseTimeEntity {
 
     public String getChampionName() {
         return championName;
+    }
+
+    public Integer getTeamId() {
+        return teamId;
     }
 
     public String getTeamPosition() {

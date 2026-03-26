@@ -7,6 +7,7 @@ import org.springframework.cache.annotation.EnableCaching;
 
 import com.riftmind.summoner.infrastructure.config.MatchServiceProperties;
 import com.riftmind.summoner.infrastructure.config.RiotApiProperties;
+import com.riftmind.summoner.infrastructure.config.SearchServiceProperties;
 
 /**
  * Summoner Service 애플리케이션의 시작점입니다.
@@ -16,7 +17,7 @@ import com.riftmind.summoner.infrastructure.config.RiotApiProperties;
  */
 @SpringBootApplication
 @EnableCaching
-@EnableConfigurationProperties({RiotApiProperties.class, MatchServiceProperties.class})
+@EnableConfigurationProperties({RiotApiProperties.class, MatchServiceProperties.class, SearchServiceProperties.class})
 public class SummonerServiceApplication {
 
     /**

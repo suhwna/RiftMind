@@ -1,5 +1,7 @@
 package com.riftmind.match.application.dto;
 
+import java.util.List;
+
 import com.riftmind.match.domain.match.MatchParticipant;
 
 /**
@@ -12,6 +14,7 @@ public record MatchParticipantView(
         String puuid,
         String summonerName,
         String championName,
+        Integer teamId,
         String teamPosition,
         int kills,
         int deaths,
@@ -36,6 +39,7 @@ public record MatchParticipantView(
         int summoner2Id,
         Integer primaryRune,
         Integer secondaryRune,
+        List<String> interpretationTags,
         int totalDamageTaken) {
 
     /**
@@ -49,6 +53,7 @@ public record MatchParticipantView(
                 participant.getPuuid(),
                 participant.getSummonerName(),
                 participant.getChampionName(),
+                participant.getTeamId(),
                 participant.getTeamPosition(),
                 participant.getKills(),
                 participant.getDeaths(),
@@ -73,6 +78,7 @@ public record MatchParticipantView(
                 participant.getSummoner2Id(),
                 participant.getPrimaryRune(),
                 participant.getSecondaryRune(),
+                MatchInterpretationTagResolver.resolve(participant),
                 participant.getTotalDamageTaken());
     }
 }

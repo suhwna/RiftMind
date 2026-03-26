@@ -1,6 +1,7 @@
 package com.riftmind.match.api.response;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.riftmind.match.application.dto.RecentMatchView;
 import com.riftmind.match.application.service.StaticDataService;
@@ -19,6 +20,8 @@ public record SummonerMatchSummaryResponse(
         String matchId,
         @Schema(description = "게임 시작 시각", example = "2026-03-23T14:30:00")
         LocalDateTime gameCreation,
+        @Schema(description = "게임 길이(초)", example = "1920")
+        Integer gameDuration,
         @Schema(description = "큐 ID", example = "420")
         Integer queueId,
         @Schema(description = "큐 한글 이름", example = "솔로 랭크")
@@ -41,6 +44,20 @@ public record SummonerMatchSummaryResponse(
         int deaths,
         @Schema(description = "어시스트 수", example = "8")
         int assists,
+        @Schema(description = "챔피언 대상 피해량", example = "21500")
+        int totalDamageDealtToChampions,
+        @Schema(description = "획득 골드", example = "13800")
+        int goldEarned,
+        @Schema(description = "라인 미니언 처치 수", example = "182")
+        int totalMinionsKilled,
+        @Schema(description = "중립 몬스터 처치 수", example = "24")
+        int neutralMinionsKilled,
+        @Schema(description = "시야 점수", example = "28")
+        int visionScore,
+        @Schema(description = "와드 설치 수", example = "9")
+        int wardsPlaced,
+        @Schema(description = "경기 해석 태그", example = "[\"캐리\", \"교전 기여\"]")
+        List<String> interpretationTags,
         @Schema(description = "승리 여부", example = "true")
         boolean win) {
 
@@ -55,6 +72,7 @@ public record SummonerMatchSummaryResponse(
         return new SummonerMatchSummaryResponse(
                 view.matchId(),
                 view.gameCreation(),
+                view.gameDuration(),
                 view.queueId(),
                 staticDataService.getQueueNameKo(view.queueId()),
                 view.gameMode(),
@@ -66,6 +84,13 @@ public record SummonerMatchSummaryResponse(
                 view.kills(),
                 view.deaths(),
                 view.assists(),
+                view.totalDamageDealtToChampions(),
+                view.goldEarned(),
+                view.totalMinionsKilled(),
+                view.neutralMinionsKilled(),
+                view.visionScore(),
+                view.wardsPlaced(),
+                view.interpretationTags(),
                 view.win());
     }
 }

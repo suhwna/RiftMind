@@ -91,7 +91,7 @@ Local Elasticsearch / Kibana:
 ```
 
 - Elasticsearch: `http://localhost:9200`
-- Kibana: `http://localhost:5601`
+- Kibana: `http://localhost:15601`
 
 Stop local search stack:
 
@@ -138,7 +138,7 @@ npm run build
 
 Frontend defaults:
 
-- dev server: `http://localhost:5173`
+- dev server: `http://localhost:3000`
 - backend gateway base URL: `http://localhost:18000`
 
 If needed, override the API base URL with `VITE_API_BASE_URL`.

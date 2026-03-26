@@ -141,6 +141,7 @@ public class MatchSyncService {
                 participant.puuid(),
                 participant.summonerName(),
                 participant.championName(),
+                participant.teamId(),
                 participant.teamPosition(),
                 participant.kills(),
                 participant.deaths(),

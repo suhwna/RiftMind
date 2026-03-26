@@ -63,12 +63,17 @@ public interface MatchServiceClient {
             int champLevel,
             List<Integer> itemIds,
             List<String> itemNames,
+            List<String> itemIconUrls,
             List<Integer> summonerSpellIds,
             List<String> summonerSpellNames,
+            List<String> summonerSpellIconUrls,
             Integer primaryRune,
             String primaryRuneName,
+            String primaryRuneIconUrl,
             Integer secondaryRune,
             String secondaryRuneName,
+            String secondaryRuneIconUrl,
+            List<String> interpretationTags,
             int totalDamageTaken
     ) {
     }

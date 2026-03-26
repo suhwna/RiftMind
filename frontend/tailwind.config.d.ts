@@ -15,7 +15,7 @@ declare const _default: {
                 card: string;
             };
             fontFamily: {
-                sans: [string, string, string, string];
+                sans: [string, string, string];
             };
         };
     };

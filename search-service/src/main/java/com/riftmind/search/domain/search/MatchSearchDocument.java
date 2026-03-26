@@ -91,10 +91,16 @@ public class MatchSearchDocument {
     private List<String> itemNames;
 
     @Field(type = FieldType.Keyword)
+    private List<String> itemIconUrls;
+
+    @Field(type = FieldType.Keyword)
     private List<Integer> summonerSpellIds;
 
     @Field(type = FieldType.Keyword)
     private List<String> summonerSpellNames;
+
+    @Field(type = FieldType.Keyword)
+    private List<String> summonerSpellIconUrls;
 
     @Field(type = FieldType.Integer)
     private Integer primaryRune;
@@ -102,11 +108,20 @@ public class MatchSearchDocument {
     @Field(type = FieldType.Keyword)
     private String primaryRuneName;
 
+    @Field(type = FieldType.Keyword)
+    private String primaryRuneIconUrl;
+
     @Field(type = FieldType.Integer)
     private Integer secondaryRune;
 
     @Field(type = FieldType.Keyword)
     private String secondaryRuneName;
+
+    @Field(type = FieldType.Keyword)
+    private String secondaryRuneIconUrl;
+
+    @Field(type = FieldType.Keyword)
+    private List<String> interpretationTags;
 
     @Field(type = FieldType.Integer)
     private int kills;
@@ -154,12 +169,17 @@ public class MatchSearchDocument {
             int champLevel,
             List<Integer> itemIds,
             List<String> itemNames,
+            List<String> itemIconUrls,
             List<Integer> summonerSpellIds,
             List<String> summonerSpellNames,
+            List<String> summonerSpellIconUrls,
             Integer primaryRune,
             String primaryRuneName,
+            String primaryRuneIconUrl,
             Integer secondaryRune,
             String secondaryRuneName,
+            String secondaryRuneIconUrl,
+            List<String> interpretationTags,
             int kills,
             int deaths,
             int assists,
@@ -191,12 +211,17 @@ public class MatchSearchDocument {
         this.champLevel = champLevel;
         this.itemIds = itemIds;
         this.itemNames = itemNames;
+        this.itemIconUrls = itemIconUrls;
         this.summonerSpellIds = summonerSpellIds;
         this.summonerSpellNames = summonerSpellNames;
+        this.summonerSpellIconUrls = summonerSpellIconUrls;
         this.primaryRune = primaryRune;
         this.primaryRuneName = primaryRuneName;
+        this.primaryRuneIconUrl = primaryRuneIconUrl;
         this.secondaryRune = secondaryRune;
         this.secondaryRuneName = secondaryRuneName;
+        this.secondaryRuneIconUrl = secondaryRuneIconUrl;
+        this.interpretationTags = interpretationTags;
         this.kills = kills;
         this.deaths = deaths;
         this.assists = assists;
@@ -229,12 +254,17 @@ public class MatchSearchDocument {
     public int getChampLevel() { return champLevel; }
     public List<Integer> getItemIds() { return itemIds; }
     public List<String> getItemNames() { return itemNames; }
+    public List<String> getItemIconUrls() { return itemIconUrls; }
     public List<Integer> getSummonerSpellIds() { return summonerSpellIds; }
     public List<String> getSummonerSpellNames() { return summonerSpellNames; }
+    public List<String> getSummonerSpellIconUrls() { return summonerSpellIconUrls; }
     public Integer getPrimaryRune() { return primaryRune; }
     public String getPrimaryRuneName() { return primaryRuneName; }
+    public String getPrimaryRuneIconUrl() { return primaryRuneIconUrl; }
     public Integer getSecondaryRune() { return secondaryRune; }
     public String getSecondaryRuneName() { return secondaryRuneName; }
+    public String getSecondaryRuneIconUrl() { return secondaryRuneIconUrl; }
+    public List<String> getInterpretationTags() { return interpretationTags; }
     public int getKills() { return kills; }
     public int getDeaths() { return deaths; }
     public int getAssists() { return assists; }

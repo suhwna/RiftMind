@@ -150,14 +150,20 @@ public class SearchQueryService {
         Map<String, SearchFilterPositionOptionResponse> positions = new LinkedHashMap<>();
         Map<Integer, SearchFilterModeOptionResponse> modes = new LinkedHashMap<>();
 
+        // 매치 검색과 달리 필터 옵션 계산은 최대 100개 매치까지만 조회하여 집계합니다. 일반적으로 최근 20~50개 매치 내에 충분한 옵션이 포함되어 있기 때문입니다.
         searchHits.getSearchHits().stream()
                 .map(SearchHit::getContent)
                 .forEach(document -> {
+                    // 챔피언 이름은 영문/한글 양쪽 필드에서 모두 추출하여 집계합니다. 예를 들어 "세라핀"으로 검색한 경우 championName은 "Seraphine"이지만 championNameKo는 "세라핀"이므로 두 필드 모두에서 옵션을 추출해야 합니다.
                     champions.putIfAbsent(
                             document.getChampionName(),
-                            new SearchFilterChampionOptionResponse(document.getChampionName(), document.getChampionNameKo())
+                            new SearchFilterChampionOptionResponse(
+                                    document.getChampionName(),
+                                    document.getChampionKey(),
+                                    document.getChampionNameKo())
                     );
 
+                    // 포지션은 teamPosition 필드에서 추출합니다. 예를 들어 "TOP", "JUNGLE", "MIDDLE", "BOTTOM", "UTILITY" 등이 될 수 있습니다.
                     if (hasText(document.getTeamPosition())) {
                         positions.putIfAbsent(
                                 document.getTeamPosition(),
@@ -165,6 +171,7 @@ public class SearchQueryService {
                         );
                     }
 
+                    // 큐 ID는 queueId 필드에서 추출하되, 아레나(1700, 1710)는 하나의 옵션으로 묶어서 집계합니다. 예를 들어 1700과 1710이 모두 존재하는 경우 "아레나"라는 하나의 옵션으로 표시해야 합니다.
                     if (document.getQueueId() != null && hasText(document.getQueueNameKo())) {
                         Integer normalizedQueueId = document.getQueueId() == 1710 ? 1700 : document.getQueueId();
                         modes.putIfAbsent(
@@ -209,6 +216,7 @@ public class SearchQueryService {
 
         Map<String, ChampionSuggestionResponse> suggestions = new LinkedHashMap<>();
 
+        // 자동완성은 검색과 달리 최대 4배의 매치를 조회하여 중복을 제거한 후 최종 결과를 size로 제한합니다. 예를 들어 사용자가 "세"로 검색한 경우 championName이 "Seraphine"이지만 championNameKo가 "세라핀"인 매치가 여러 개 존재할 수 있으므로, 중복된 챔피언 이름을 제거하기 위해 더 많은 매치를 조회해야 합니다.
         searchHits.getSearchHits().stream()
                 .map(SearchHit::getContent)
                 .forEach(document -> suggestions.putIfAbsent(

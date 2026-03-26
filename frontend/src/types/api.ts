@@ -27,6 +27,7 @@ export type SummonerProfileResponse = {
 export type SummonerMatchSummaryResponse = {
   matchId: string;
   gameCreation: string;
+  gameDuration: number;
   queueId: number;
   queueNameKo: string;
   gameMode: string;
@@ -38,6 +39,13 @@ export type SummonerMatchSummaryResponse = {
   kills: number;
   deaths: number;
   assists: number;
+  totalDamageDealtToChampions: number;
+  goldEarned: number;
+  totalMinionsKilled: number;
+  neutralMinionsKilled: number;
+  visionScore: number;
+  wardsPlaced: number;
+  interpretationTags: string[];
   win: boolean;
 };
 
@@ -53,6 +61,7 @@ export type MatchParticipantResponse = {
   championName: string;
   championKey: string;
   championNameKo: string;
+  teamId: number | null;
   teamPosition: string | null;
   teamPositionKo: string | null;
   kills: number;
@@ -75,13 +84,22 @@ export type MatchParticipantResponse = {
   item5: number;
   item6: number;
   itemNames: string[];
+  itemIconUrls: string[];
+  itemDescriptions: string[];
   summoner1Id: number;
   summoner2Id: number;
   summonerSpellNames: string[];
+  summonerSpellIconUrls: string[];
+  summonerSpellDescriptions: string[];
   primaryRune: number | null;
   primaryRuneName: string | null;
+  primaryRuneIconUrl: string | null;
+  primaryRuneDescription: string | null;
   secondaryRune: number | null;
   secondaryRuneName: string | null;
+  secondaryRuneIconUrl: string | null;
+  secondaryRuneDescription: string | null;
+  interpretationTags: string[];
   totalDamageTaken: number;
 };
 
@@ -121,12 +139,17 @@ export type SearchMatchResponse = {
   champLevel: number;
   itemIds: number[];
   itemNames: string[];
+  itemIconUrls: string[];
   summonerSpellIds: number[];
   summonerSpellNames: string[];
+  summonerSpellIconUrls: string[];
   primaryRune: number | null;
   primaryRuneName: string | null;
+  primaryRuneIconUrl: string | null;
   secondaryRune: number | null;
   secondaryRuneName: string | null;
+  secondaryRuneIconUrl: string | null;
+  interpretationTags: string[];
   kills: number;
   deaths: number;
   assists: number;
@@ -144,6 +167,7 @@ export type SearchMatchListResponse = {
 
 export type SearchFilterChampionOptionResponse = {
   championName: string;
+  championKey: string;
   championNameKo: string;
 };
 

@@ -2,10 +2,42 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: "Rix Modern Gothic";
+  src: url("./assets/fonts/RIXGOL.TTF") format("truetype");
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Rix Modern Gothic";
+  src: url("./assets/fonts/RIXGOM.TTF") format("truetype");
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Rix Modern Gothic";
+  src: url("./assets/fonts/RIXGOB.TTF") format("truetype");
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Rix Modern Gothic";
+  src: url("./assets/fonts/RIXGOEB.TTF") format("truetype");
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+}
+
 :root {
   color: #e5e7eb;
   background: #0a0f19;
-  font-family: "Pretendard Variable", "SUIT Variable", system-ui, sans-serif;
+  font-family: "Rix Modern Gothic", system-ui, sans-serif;
 }
 
 * {
@@ -21,9 +53,7 @@ body {
   min-width: 320px;
   min-height: 100vh;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.025) 0, rgba(255, 255, 255, 0.025) 1px, transparent 1px, transparent 44px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 0, rgba(255, 255, 255, 0.025) 1px, transparent 1px, transparent 44px),
-    linear-gradient(180deg, #0a0f19 0%, #0d1320 100%);
+    linear-gradient(180deg, #0a0f19 0%, #0b1220 100%);
 }
 
 #root {

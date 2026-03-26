@@ -1,6 +1,7 @@
 package com.riftmind.summoner.api.response;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -38,6 +39,8 @@ public record SummonerMatchSummaryResponse(
         int deaths,
         @Schema(description = "어시스트 수", example = "8")
         int assists,
+        @Schema(description = "경기 해석 태그 목록")
+        List<String> interpretationTags,
         @Schema(description = "승리 여부", example = "true")
         boolean win) {
 }

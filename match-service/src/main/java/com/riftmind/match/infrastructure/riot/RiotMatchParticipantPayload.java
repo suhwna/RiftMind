@@ -10,6 +10,7 @@ public record RiotMatchParticipantPayload(
         String puuid,
         String summonerName,
         String championName,
+        Integer teamId,
         String teamPosition,
         int kills,
         int deaths,
