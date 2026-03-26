@@ -5,7 +5,7 @@ spring:
   application:
     name: search-service
   elasticsearch:
-    uris: ${ELASTICSEARCH_URL:http://localhost:9200}
+    uris: ${ELASTICSEARCH_URL:http://localhost:19200}
 
 management:
   health:

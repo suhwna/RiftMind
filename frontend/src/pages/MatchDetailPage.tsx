@@ -206,8 +206,9 @@ function ParticipantPanel({ participant, focusPuuid, compact = false }: Particip
             />
             <div className="min-w-0">
               <h3 className={`truncate text-base font-semibold tracking-[-0.04em] ${isFocus ? "text-tide" : "text-white"}`}>
-                {participant.championNameKo} · {participant.summonerName}
+                {participant.championNameKo}
               </h3>
+              <p className="mt-1 truncate text-sm text-slate-400">{participant.summonerName}</p>
               {isFocus ? (
                 <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-tide">
                   내 플레이
@@ -219,7 +220,7 @@ function ParticipantPanel({ participant, focusPuuid, compact = false }: Particip
         </div>
 
           <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
-            <CompactStat title="KDA" value={`${participant.kills} / ${participant.deaths} / ${participant.assists}`} strong />
+            <CompactStat title="KDA" value={`${participant.kills} / ${participant.deaths} / ${participant.assists}`} />
             <CompactStat title="딜량" value={participant.totalDamageDealtToChampions.toLocaleString()} />
             <CompactStat title="골드 / CS" value={`${participant.goldEarned.toLocaleString()} / ${totalCs.toLocaleString()}`} />
             <CompactStat
