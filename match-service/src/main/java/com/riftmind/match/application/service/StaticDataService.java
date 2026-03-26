@@ -14,7 +14,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClient;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.riftmind.match.infrastructure.config.RiotApiProperties;
+import com.riftmind.match.infrastructure.config
+        .RiotApiProperties;
 
 /**
  * Data Dragon 정적 데이터를 조회해 표시용 한글 이름을 제공합니다.
@@ -187,8 +188,8 @@ public class StaticDataService {
     public List<String> getItemDescriptions(List<Integer> itemIds) {
         ensureItemNamesLoaded();
         return itemIds.stream()
+                .filter(itemId -> itemId != null && itemId > 0)
                 .map(this::getItemDescription)
-                .filter(StringUtils::hasText)
                 .toList();
     }
 
@@ -232,8 +233,8 @@ public class StaticDataService {
     public List<String> getSummonerSpellDescriptions(Integer summoner1Id, Integer summoner2Id) {
         ensureSummonerSpellNamesLoaded();
         return List.of(summoner1Id, summoner2Id).stream()
+                .filter(summonerSpellId -> summonerSpellId != null && summonerSpellId > 0)
                 .map(this::getSummonerSpellDescription)
-                .filter(StringUtils::hasText)
                 .toList();
     }
 
@@ -334,14 +335,20 @@ public class StaticDataService {
             Map<String, String> loadedDescriptions = new LinkedHashMap<>();
             items.fields().forEachRemaining(entry -> loadedNames.put(
                     entry.getKey(),
-                    entry.getValue().path("name").asText(entry.getKey())));
+                    firstNonBlank(entry.getValue().path("name").asText(null), entry.getKey())));
             items.fields().forEachRemaining(entry -> loadedDescriptions.put(
                     entry.getKey(),
-                    sanitizeDescription(entry.getValue().path("description").asText(null))));
+                    resolveItemDescription(entry.getValue(), entry.getKey())));
             itemNames = Map.copyOf(loadedNames);
             itemDescriptions = Map.copyOf(loadedDescriptions);
         } catch (RuntimeException exception) {
-            log.warn("Failed to load item static data: {}", exception.getMessage());
+            log.warn("Failed to load item static data. baseUrl={}, itemVersion={}, locale={}, errorType={}, message={}",
+                    riotApiProperties.getDataDragonBaseUrl(),
+                    versions != null ? versions.itemVersion() : null,
+                    versions != null ? versions.locale() : null,
+                    exception.getClass().getName(),
+                    exception.getMessage(),
+                    exception);
             itemNames = Map.of();
             itemDescriptions = Map.of();
         }
@@ -367,10 +374,14 @@ public class StaticDataService {
             Map<String, String> loadedAssetKeys = new LinkedHashMap<>();
             summonerSpells.fields().forEachRemaining(entry -> loadedNames.put(
                     entry.getValue().path("key").asText(entry.getKey()),
-                    entry.getValue().path("name").asText(entry.getKey())));
+                    firstNonBlank(entry.getValue().path("name").asText(null), entry.getKey())));
             summonerSpells.fields().forEachRemaining(entry -> loadedDescriptions.put(
                     entry.getValue().path("key").asText(entry.getKey()),
-                    sanitizeDescription(entry.getValue().path("description").asText(null))));
+                    firstNonBlank(
+                            sanitizeDescription(entry.getValue().path("description").asText(null)),
+                            sanitizeDescription(entry.getValue().path("tooltip").asText(null)),
+                            entry.getValue().path("name").asText(null),
+                            entry.getKey())));
             summonerSpells.fields().forEachRemaining(entry -> loadedAssetKeys.put(
                     entry.getValue().path("key").asText(entry.getKey()),
                     entry.getValue().path("image").path("full").asText(null)));
@@ -378,7 +389,13 @@ public class StaticDataService {
             summonerSpellDescriptions = Map.copyOf(loadedDescriptions);
             summonerSpellAssetKeys = Map.copyOf(loadedAssetKeys);
         } catch (RuntimeException exception) {
-            log.warn("Failed to load summoner spell static data: {}", exception.getMessage());
+            log.warn("Failed to load summoner spell static data. baseUrl={}, summonerVersion={}, locale={}, errorType={}, message={}",
+                    riotApiProperties.getDataDragonBaseUrl(),
+                    versions != null ? versions.summonerVersion() : null,
+                    versions != null ? versions.locale() : null,
+                    exception.getClass().getName(),
+                    exception.getMessage(),
+                    exception);
             summonerSpellNames = Map.of();
             summonerSpellDescriptions = Map.of();
             summonerSpellAssetKeys = Map.of();
@@ -404,10 +421,15 @@ public class StaticDataService {
             Map<Integer, String> loadedIconPaths = new LinkedHashMap<>();
             root.forEach(node -> loadedNames.put(
                     node.path("id").asInt(),
-                    node.path("name").asText(String.valueOf(node.path("id").asInt()))));
+                    firstNonBlank(node.path("name").asText(null), String.valueOf(node.path("id").asInt()))));
             root.forEach(node -> loadedDescriptions.put(
                     node.path("id").asInt(),
-                    sanitizeDescription(node.path("longDesc").asText(defaultRuneStyleDescription(node.path("id").asInt())))));
+                    firstNonBlank(
+                            sanitizeDescription(node.path("longDesc").asText(null)),
+                            sanitizeDescription(node.path("shortDesc").asText(null)),
+                            defaultRuneStyleDescription(node.path("id").asInt()),
+                            node.path("name").asText(null),
+                            String.valueOf(node.path("id").asInt()))));
             root.forEach(node -> loadedIconPaths.put(
                     node.path("id").asInt(),
                     node.path("icon").asText(null)));
@@ -415,7 +437,13 @@ public class StaticDataService {
             runeStyleDescriptions = Map.copyOf(loadedDescriptions);
             runeStyleIconPaths = Map.copyOf(loadedIconPaths);
         } catch (RuntimeException exception) {
-            log.warn("Failed to load rune static data: {}", exception.getMessage());
+            log.warn("Failed to load rune static data. baseUrl={}, runeVersion={}, locale={}, errorType={}, message={}",
+                    riotApiProperties.getDataDragonBaseUrl(),
+                    versions != null ? versions.runeVersion() : null,
+                    versions != null ? versions.locale() : null,
+                    exception.getClass().getName(),
+                    exception.getMessage(),
+                    exception);
             runeStyleNames = Map.of();
             runeStyleDescriptions = Map.of();
             runeStyleIconPaths = Map.of();
@@ -565,6 +593,25 @@ public class StaticDataService {
     }
 
     /**
+     * Data Dragon 아이템 노드에서 툴팁용 설명을 생성합니다.
+     *
+     * @param itemNode 아이템 노드
+     * @param fallbackKey fallback 키
+     * @return 해석된 아이템 설명
+     */
+    private String resolveItemDescription(JsonNode itemNode, String fallbackKey) {
+        String detailedDescription = sanitizeDescription(itemNode.path("description").asText(null));
+        String plainText = sanitizeDescription(itemNode.path("plaintext").asText(null));
+        String itemName = itemNode.path("name").asText(null);
+
+        return firstNonBlank(
+                detailedDescription,
+                plainText,
+                itemName,
+                fallbackKey);
+    }
+
+    /**
      * Data Dragon 설명 문자열에서 HTML을 제거합니다.
      *
      * @param rawDescription 원본 설명
@@ -588,6 +635,21 @@ public class StaticDataService {
                 .replaceAll(" *\n *", "\n")
                 .trim();
         return StringUtils.hasText(sanitized) ? sanitized : null;
+    }
+
+    /**
+     * 여러 후보 문자열 중 첫 번째 유효한 문자열을 반환합니다.
+     *
+     * @param candidates 후보 문자열
+     * @return 첫 번째 유효한 문자열
+     */
+    private String firstNonBlank(String... candidates) {
+        for (String candidate : candidates) {
+            if (StringUtils.hasText(candidate)) {
+                return candidate;
+            }
+        }
+        return null;
     }
 
     /**
@@ -646,12 +708,16 @@ public class StaticDataService {
             JsonNode versionNode = realm.path("n");
             String cdnVersion = realm.path("v").asText(versionNode.path("champion").asText());
             String locale = realm.path("l").asText(riotApiProperties.getDataDragonLocale());
+            String championVersion = firstNonBlank(versionNode.path("champion").asText(null), cdnVersion);
+            String itemVersion = firstNonBlank(versionNode.path("item").asText(null), cdnVersion, championVersion);
+            String summonerVersion = firstNonBlank(versionNode.path("summoner").asText(null), cdnVersion, championVersion);
+            String runeVersion = firstNonBlank(cdnVersion, championVersion);
 
             versions = new DataDragonVersions(
-                    versionNode.path("champion").asText(),
-                    versionNode.path("item").asText(),
-                    versionNode.path("summoner").asText(),
-                    cdnVersion,
+                    championVersion,
+                    itemVersion,
+                    summonerVersion,
+                    runeVersion,
                     StringUtils.hasText(riotApiProperties.getDataDragonLocale())
                             ? riotApiProperties.getDataDragonLocale()
                             : locale);
