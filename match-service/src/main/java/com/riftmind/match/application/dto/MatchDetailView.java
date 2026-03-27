@@ -18,6 +18,8 @@ public record MatchDetailView(
         Integer queueId,
         String gameMode,
         String gameVersion,
+        List<String> focusStrengths,
+        List<String> focusWeaknesses,
         List<MatchParticipantView> participants) {
 
     /**
@@ -26,7 +28,8 @@ public record MatchDetailView(
      * @param matchSummary 매치 엔티티
      * @return 매치 상세 조회 DTO
      */
-    public static MatchDetailView from(MatchSummary matchSummary) {
+    public static MatchDetailView from(MatchSummary matchSummary, String focusPuuid) {
+        MatchDetailInsightSummary insightSummary = MatchDetailInsightResolver.resolve(matchSummary, focusPuuid);
         return new MatchDetailView(
                 matchSummary.getMatchId(),
                 matchSummary.getGameCreation(),
@@ -34,6 +37,8 @@ public record MatchDetailView(
                 matchSummary.getQueueId(),
                 matchSummary.getGameMode(),
                 matchSummary.getGameVersion(),
+                insightSummary.strengths(),
+                insightSummary.weaknesses(),
                 matchSummary.getParticipants().stream().map(MatchParticipantView::from).toList());
     }
 }

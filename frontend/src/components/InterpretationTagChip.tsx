@@ -55,7 +55,7 @@ export function InterpretationTagChip({ tag }: InterpretationTagChipProps) {
   const Icon = presentation.icon;
 
   return (
-    <div className="group relative inline-flex">
+    <div className="group/tag relative inline-flex">
       <span
         className={[
           "inline-flex items-center gap-1.5 border px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.12em]",
@@ -67,7 +67,7 @@ export function InterpretationTagChip({ tag }: InterpretationTagChipProps) {
         {tag}
       </span>
 
-      <div className="pointer-events-none absolute left-0 top-full z-20 mt-2 w-56 translate-y-1 border border-slate-700 bg-[#020617] p-3 text-xs text-slate-200 opacity-0 shadow-[0_14px_30px_rgba(2,6,23,0.5)] transition duration-150 group-hover:translate-y-0 group-hover:opacity-100">
+      <div className="pointer-events-none absolute left-0 top-full z-20 mt-2 w-56 translate-y-1 border border-slate-700 bg-[#020617] p-3 text-xs text-slate-200 opacity-0 shadow-[0_14px_30px_rgba(2,6,23,0.5)] transition duration-150 group-hover/tag:translate-y-0 group-hover/tag:opacity-100">
         <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-tide">태그 기준</p>
         <p className="mt-2 font-semibold text-white">{tag}</p>
         <p className="mt-1 leading-5 text-slate-300">{presentation.description}</p>

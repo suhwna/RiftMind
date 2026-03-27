@@ -5,6 +5,8 @@ import com.riftmind.search.api.response.ChampionSuggestionListResponse;
 import com.riftmind.search.api.response.MatchIndexResponse;
 import com.riftmind.search.api.response.SearchFilterOptionsResponse;
 import com.riftmind.search.api.response.SearchMatchListResponse;
+import com.riftmind.search.api.response.SearchOverviewResponse;
+import com.riftmind.search.application.service.SearchAnalysisService;
 import com.riftmind.search.application.service.SearchIndexService;
 import com.riftmind.search.application.service.SearchQueryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,10 +35,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(value = "/api/v1/search", produces = MediaType.APPLICATION_JSON_VALUE)
 public class SearchController {
 
+    private final SearchAnalysisService searchAnalysisService;
     private final SearchIndexService searchIndexService;
     private final SearchQueryService searchQueryService;
 
-    public SearchController(SearchIndexService searchIndexService, SearchQueryService searchQueryService) {
+    public SearchController(
+            SearchAnalysisService searchAnalysisService,
+            SearchIndexService searchIndexService,
+            SearchQueryService searchQueryService
+    ) {
+        this.searchAnalysisService = searchAnalysisService;
         this.searchIndexService = searchIndexService;
         this.searchQueryService = searchQueryService;
     }
@@ -80,6 +88,22 @@ public class SearchController {
     @GetMapping("/filter-options")
     public SearchFilterOptionsResponse getFilterOptions(@RequestParam String puuid) {
         return searchQueryService.getFilterOptions(puuid);
+    }
+
+    /**
+     * 현재 소환사의 최근 경기 패턴 요약을 조회합니다.
+     *
+     * @param puuid Riot PUUID
+     * @param count 분석할 최근 경기 수
+     * @return 플레이 패턴 요약 응답
+     */
+    @Operation(summary = "플레이 요약", description = "최근 N판 기준으로 승률, 챔피언/포지션 성과, 한 줄 인사이트를 반환합니다.")
+    @GetMapping("/overview")
+    public SearchOverviewResponse getOverview(
+            @RequestParam String puuid,
+            @RequestParam(defaultValue = "10") @Min(5) @Max(20) int count
+    ) {
+        return searchAnalysisService.getOverview(puuid, count);
     }
 
     /**

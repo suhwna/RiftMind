@@ -20,6 +20,7 @@ public record SearchableMatchParticipantView(
         String summonerName,
         String championName,
         String teamPosition,
+        String opponentChampionName,
         int kills,
         int deaths,
         int assists,
@@ -53,6 +54,8 @@ public record SearchableMatchParticipantView(
      * @return 검색 색인용 DTO
      */
     public static SearchableMatchParticipantView from(MatchParticipant participant) {
+        MatchParticipant opponent = resolveLaneOpponent(participant);
+
         return new SearchableMatchParticipantView(
                 participant.getMatchSummary().getMatchId(),
                 participant.getMatchSummary().getGameCreation(),
@@ -62,6 +65,7 @@ public record SearchableMatchParticipantView(
                 participant.getSummonerName(),
                 participant.getChampionName(),
                 participant.getTeamPosition(),
+                opponent != null ? opponent.getChampionName() : null,
                 participant.getKills(),
                 participant.getDeaths(),
                 participant.getAssists(),
@@ -87,5 +91,24 @@ public record SearchableMatchParticipantView(
                 participant.getSecondaryRune(),
                 MatchInterpretationTagResolver.resolve(participant),
                 participant.getTotalDamageTaken());
+    }
+
+    /**
+     * 같은 경기에서 동일 포지션의 상대 참가자를 찾습니다.
+     *
+     * @param participant 기준 참가자
+     * @return 상대 라인 참가자
+     */
+    private static MatchParticipant resolveLaneOpponent(MatchParticipant participant) {
+        if (participant.getTeamId() == null || participant.getTeamPosition() == null) {
+            return null;
+        }
+
+        return participant.getMatchSummary().getParticipants().stream()
+                .filter(candidate -> !candidate.getPuuid().equals(participant.getPuuid()))
+                .filter(candidate -> candidate.getTeamId() != null && !candidate.getTeamId().equals(participant.getTeamId()))
+                .filter(candidate -> participant.getTeamPosition().equals(candidate.getTeamPosition()))
+                .findFirst()
+                .orElse(null);
     }
 }

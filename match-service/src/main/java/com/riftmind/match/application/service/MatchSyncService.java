@@ -166,6 +166,26 @@ public class MatchSyncService {
                 participant.summoner2Id(),
                 participant.primaryRune(),
                 participant.secondaryRune(),
-                participant.totalDamageTaken());
+                participant.totalDamageTaken(),
+                participant.doubleKills(),
+                participant.tripleKills(),
+                participant.quadraKills(),
+                participant.pentaKills(),
+                participant.largestKillingSpree(),
+                participant.largestMultiKill(),
+                participant.killingSprees(),
+                participant.firstBloodKill(),
+                participant.firstBloodAssist(),
+                participant.firstTowerKill(),
+                participant.firstTowerAssist(),
+                participant.turretKills(),
+                participant.inhibitorKills(),
+                participant.damageDealtToObjectives(),
+                participant.damageDealtToTurrets(),
+                participant.objectivesStolen(),
+                participant.objectivesStolenAssists(),
+                participant.totalHeal(),
+                participant.totalHealsOnTeammates(),
+                participant.totalDamageShieldedOnTeammates());
     }
 }

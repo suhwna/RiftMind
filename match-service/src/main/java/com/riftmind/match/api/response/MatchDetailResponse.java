@@ -33,6 +33,10 @@ public record MatchDetailResponse(
         String gameMode,
         @Schema(description = "게임 버전", example = "15.6.1")
         String gameVersion,
+        @ArraySchema(schema = @Schema(example = "딜량 28,314로 10명 중 2위였습니다."))
+        List<String> focusStrengths,
+        @ArraySchema(schema = @Schema(example = "데스 8회로 10명 중 상위권이었습니다."))
+        List<String> focusWeaknesses,
         @ArraySchema(schema = @Schema(implementation = MatchParticipantResponse.class))
         List<MatchParticipantResponse> participants) {
 
@@ -53,6 +57,8 @@ public record MatchDetailResponse(
                 staticDataService.getQueueNameKo(view.queueId()),
                 view.gameMode(),
                 view.gameVersion(),
+                view.focusStrengths(),
+                view.focusWeaknesses(),
                 view.participants().stream()
                         .map(participant -> MatchParticipantResponse.from(participant, staticDataService))
                         .toList());

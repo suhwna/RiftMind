@@ -117,6 +117,66 @@ public class MatchParticipant extends BaseTimeEntity {
     @Column(name = "total_damage_taken")
     private Integer totalDamageTaken;
 
+    @Column(name = "double_kills")
+    private Integer doubleKills;
+
+    @Column(name = "triple_kills")
+    private Integer tripleKills;
+
+    @Column(name = "quadra_kills")
+    private Integer quadraKills;
+
+    @Column(name = "penta_kills")
+    private Integer pentaKills;
+
+    @Column(name = "largest_killing_spree")
+    private Integer largestKillingSpree;
+
+    @Column(name = "largest_multi_kill")
+    private Integer largestMultiKill;
+
+    @Column(name = "killing_sprees")
+    private Integer killingSprees;
+
+    @Column(name = "first_blood_kill")
+    private Boolean firstBloodKill;
+
+    @Column(name = "first_blood_assist")
+    private Boolean firstBloodAssist;
+
+    @Column(name = "first_tower_kill")
+    private Boolean firstTowerKill;
+
+    @Column(name = "first_tower_assist")
+    private Boolean firstTowerAssist;
+
+    @Column(name = "turret_kills")
+    private Integer turretKills;
+
+    @Column(name = "inhibitor_kills")
+    private Integer inhibitorKills;
+
+    @Column(name = "damage_dealt_to_objectives")
+    private Integer damageDealtToObjectives;
+
+    @Column(name = "damage_dealt_to_turrets")
+    private Integer damageDealtToTurrets;
+
+    @Column(name = "objectives_stolen")
+    private Integer objectivesStolen;
+
+    @Column(name = "objectives_stolen_assists")
+    private Integer objectivesStolenAssists;
+
+    @Column(name = "total_heal")
+    private Integer totalHeal;
+
+    @Column(name = "total_heals_on_teammates")
+    private Integer totalHealsOnTeammates;
+
+    @Column(name = "total_damage_shielded_on_teammates")
+    private Integer totalDamageShieldedOnTeammates;
+
     protected MatchParticipant() {
     }
 
@@ -149,7 +209,27 @@ public class MatchParticipant extends BaseTimeEntity {
             int summoner2Id,
             Integer primaryRune,
             Integer secondaryRune,
-            int totalDamageTaken) {
+            int totalDamageTaken,
+            int doubleKills,
+            int tripleKills,
+            int quadraKills,
+            int pentaKills,
+            int largestKillingSpree,
+            int largestMultiKill,
+            int killingSprees,
+            boolean firstBloodKill,
+            boolean firstBloodAssist,
+            boolean firstTowerKill,
+            boolean firstTowerAssist,
+            int turretKills,
+            int inhibitorKills,
+            int damageDealtToObjectives,
+            int damageDealtToTurrets,
+            int objectivesStolen,
+            int objectivesStolenAssists,
+            int totalHeal,
+            int totalHealsOnTeammates,
+            int totalDamageShieldedOnTeammates) {
         this.puuid = puuid;
         this.summonerName = summonerName;
         this.championName = championName;
@@ -179,6 +259,26 @@ public class MatchParticipant extends BaseTimeEntity {
         this.primaryRune = primaryRune;
         this.secondaryRune = secondaryRune;
         this.totalDamageTaken = totalDamageTaken;
+        this.doubleKills = doubleKills;
+        this.tripleKills = tripleKills;
+        this.quadraKills = quadraKills;
+        this.pentaKills = pentaKills;
+        this.largestKillingSpree = largestKillingSpree;
+        this.largestMultiKill = largestMultiKill;
+        this.killingSprees = killingSprees;
+        this.firstBloodKill = firstBloodKill;
+        this.firstBloodAssist = firstBloodAssist;
+        this.firstTowerKill = firstTowerKill;
+        this.firstTowerAssist = firstTowerAssist;
+        this.turretKills = turretKills;
+        this.inhibitorKills = inhibitorKills;
+        this.damageDealtToObjectives = damageDealtToObjectives;
+        this.damageDealtToTurrets = damageDealtToTurrets;
+        this.objectivesStolen = objectivesStolen;
+        this.objectivesStolenAssists = objectivesStolenAssists;
+        this.totalHeal = totalHeal;
+        this.totalHealsOnTeammates = totalHealsOnTeammates;
+        this.totalDamageShieldedOnTeammates = totalDamageShieldedOnTeammates;
     }
 
     /**
@@ -317,7 +417,91 @@ public class MatchParticipant extends BaseTimeEntity {
         return zeroIfNull(totalDamageTaken);
     }
 
+    public int getDoubleKills() {
+        return zeroIfNull(doubleKills);
+    }
+
+    public int getTripleKills() {
+        return zeroIfNull(tripleKills);
+    }
+
+    public int getQuadraKills() {
+        return zeroIfNull(quadraKills);
+    }
+
+    public int getPentaKills() {
+        return zeroIfNull(pentaKills);
+    }
+
+    public int getLargestKillingSpree() {
+        return zeroIfNull(largestKillingSpree);
+    }
+
+    public int getLargestMultiKill() {
+        return zeroIfNull(largestMultiKill);
+    }
+
+    public int getKillingSprees() {
+        return zeroIfNull(killingSprees);
+    }
+
+    public boolean isFirstBloodKill() {
+        return falseIfNull(firstBloodKill);
+    }
+
+    public boolean isFirstBloodAssist() {
+        return falseIfNull(firstBloodAssist);
+    }
+
+    public boolean isFirstTowerKill() {
+        return falseIfNull(firstTowerKill);
+    }
+
+    public boolean isFirstTowerAssist() {
+        return falseIfNull(firstTowerAssist);
+    }
+
+    public int getTurretKills() {
+        return zeroIfNull(turretKills);
+    }
+
+    public int getInhibitorKills() {
+        return zeroIfNull(inhibitorKills);
+    }
+
+    public int getDamageDealtToObjectives() {
+        return zeroIfNull(damageDealtToObjectives);
+    }
+
+    public int getDamageDealtToTurrets() {
+        return zeroIfNull(damageDealtToTurrets);
+    }
+
+    public int getObjectivesStolen() {
+        return zeroIfNull(objectivesStolen);
+    }
+
+    public int getObjectivesStolenAssists() {
+        return zeroIfNull(objectivesStolenAssists);
+    }
+
+    public int getTotalHeal() {
+        return zeroIfNull(totalHeal);
+    }
+
+    public int getTotalHealsOnTeammates() {
+        return zeroIfNull(totalHealsOnTeammates);
+    }
+
+    public int getTotalDamageShieldedOnTeammates() {
+        return zeroIfNull(totalDamageShieldedOnTeammates);
+    }
+
     private int zeroIfNull(Integer value) {
         return value == null ? 0 : value;
+    }
+
+    private boolean falseIfNull(Boolean value) {
+        return value != null && value;
     }
 }

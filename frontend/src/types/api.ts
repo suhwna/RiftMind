@@ -101,6 +101,26 @@ export type MatchParticipantResponse = {
   secondaryRuneDescription: string | null;
   interpretationTags: string[];
   totalDamageTaken: number;
+  doubleKills: number;
+  tripleKills: number;
+  quadraKills: number;
+  pentaKills: number;
+  largestKillingSpree: number;
+  largestMultiKill: number;
+  killingSprees: number;
+  firstBloodKill: boolean;
+  firstBloodAssist: boolean;
+  firstTowerKill: boolean;
+  firstTowerAssist: boolean;
+  turretKills: number;
+  inhibitorKills: number;
+  damageDealtToObjectives: number;
+  damageDealtToTurrets: number;
+  objectivesStolen: number;
+  objectivesStolenAssists: number;
+  totalHeal: number;
+  totalHealsOnTeammates: number;
+  totalDamageShieldedOnTeammates: number;
 };
 
 export type MatchDetailResponse = {
@@ -112,6 +132,8 @@ export type MatchDetailResponse = {
   queueNameKo: string;
   gameMode: string;
   gameVersion: string;
+  focusStrengths: string[];
+  focusWeaknesses: string[];
   participants: MatchParticipantResponse[];
 };
 
@@ -185,4 +207,50 @@ export type SearchFilterOptionsResponse = {
   champions: SearchFilterChampionOptionResponse[];
   positions: SearchFilterPositionOptionResponse[];
   modes: SearchFilterModeOptionResponse[];
+};
+
+export type SearchOverviewChampionResponse = {
+  championName: string;
+  championKey: string;
+  championNameKo: string;
+  matchCount: number;
+  winCount: number;
+  winRate: number;
+  averageKda: number;
+};
+
+export type SearchOverviewPositionResponse = {
+  teamPosition: string;
+  teamPositionKo: string;
+  matchCount: number;
+  winCount: number;
+  winRate: number;
+  averageKda: number;
+};
+
+export type SearchOverviewResponse = {
+  puuid: string;
+  requestedMatchCount: number;
+  analyzedMatchCount: number;
+  totalIndexedMatches: number;
+  winCount: number;
+  lossCount: number;
+  winRate: number;
+  averageKda: number;
+  averageDamage: number;
+  averageGold: number;
+  averageCs: number;
+  averageVisionScore: number;
+  topPlayedChampions: SearchOverviewChampionResponse[];
+  mostPlayedChampion: SearchOverviewChampionResponse | null;
+  bestChampion: SearchOverviewChampionResponse | null;
+  mainChampionFrequentOpponentChampion: SearchOverviewChampionResponse | null;
+  mainChampionToughestOpponentChampion: SearchOverviewChampionResponse | null;
+  mainChampionFrequentItemNames: string[];
+  toughestOpponentChampion: SearchOverviewChampionResponse | null;
+  frequentOpponentChampion: SearchOverviewChampionResponse | null;
+  bestPosition: SearchOverviewPositionResponse | null;
+  weakPosition: SearchOverviewPositionResponse | null;
+  frequentItemNames: string[];
+  insights: string[];
 };

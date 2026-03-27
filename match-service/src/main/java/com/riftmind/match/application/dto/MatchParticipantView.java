@@ -40,7 +40,27 @@ public record MatchParticipantView(
         Integer primaryRune,
         Integer secondaryRune,
         List<String> interpretationTags,
-        int totalDamageTaken) {
+        int totalDamageTaken,
+        int doubleKills,
+        int tripleKills,
+        int quadraKills,
+        int pentaKills,
+        int largestKillingSpree,
+        int largestMultiKill,
+        int killingSprees,
+        boolean firstBloodKill,
+        boolean firstBloodAssist,
+        boolean firstTowerKill,
+        boolean firstTowerAssist,
+        int turretKills,
+        int inhibitorKills,
+        int damageDealtToObjectives,
+        int damageDealtToTurrets,
+        int objectivesStolen,
+        int objectivesStolenAssists,
+        int totalHeal,
+        int totalHealsOnTeammates,
+        int totalDamageShieldedOnTeammates) {
 
     /**
      * 참가자 엔티티를 참가자 조회 DTO로 변환합니다.
@@ -79,6 +99,26 @@ public record MatchParticipantView(
                 participant.getPrimaryRune(),
                 participant.getSecondaryRune(),
                 MatchInterpretationTagResolver.resolve(participant),
-                participant.getTotalDamageTaken());
+                participant.getTotalDamageTaken(),
+                participant.getDoubleKills(),
+                participant.getTripleKills(),
+                participant.getQuadraKills(),
+                participant.getPentaKills(),
+                participant.getLargestKillingSpree(),
+                participant.getLargestMultiKill(),
+                participant.getKillingSprees(),
+                participant.isFirstBloodKill(),
+                participant.isFirstBloodAssist(),
+                participant.isFirstTowerKill(),
+                participant.isFirstTowerAssist(),
+                participant.getTurretKills(),
+                participant.getInhibitorKills(),
+                participant.getDamageDealtToObjectives(),
+                participant.getDamageDealtToTurrets(),
+                participant.getObjectivesStolen(),
+                participant.getObjectivesStolenAssists(),
+                participant.getTotalHeal(),
+                participant.getTotalHealsOnTeammates(),
+                participant.getTotalDamageShieldedOnTeammates());
     }
 }

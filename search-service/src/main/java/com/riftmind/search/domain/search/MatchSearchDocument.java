@@ -52,6 +52,15 @@ public class MatchSearchDocument {
     private String championNameKo;
 
     @Field(type = FieldType.Keyword)
+    private String opponentChampionName;
+
+    @Field(type = FieldType.Keyword)
+    private String opponentChampionKey;
+
+    @Field(type = FieldType.Keyword)
+    private String opponentChampionNameKo;
+
+    @Field(type = FieldType.Keyword)
     private String teamPosition;
 
     @Field(type = FieldType.Keyword)
@@ -156,6 +165,9 @@ public class MatchSearchDocument {
             String championName,
             String championKey,
             String championNameKo,
+            String opponentChampionName,
+            String opponentChampionKey,
+            String opponentChampionNameKo,
             String teamPosition,
             String teamPositionKo,
             int totalDamageDealtToChampions,
@@ -198,6 +210,9 @@ public class MatchSearchDocument {
         this.championName = championName;
         this.championKey = championKey;
         this.championNameKo = championNameKo;
+        this.opponentChampionName = opponentChampionName;
+        this.opponentChampionKey = opponentChampionKey;
+        this.opponentChampionNameKo = opponentChampionNameKo;
         this.teamPosition = teamPosition;
         this.teamPositionKo = teamPositionKo;
         this.totalDamageDealtToChampions = totalDamageDealtToChampions;
@@ -241,6 +256,9 @@ public class MatchSearchDocument {
     public String getChampionName() { return championName; }
     public String getChampionKey() { return championKey; }
     public String getChampionNameKo() { return championNameKo; }
+    public String getOpponentChampionName() { return opponentChampionName; }
+    public String getOpponentChampionKey() { return opponentChampionKey; }
+    public String getOpponentChampionNameKo() { return opponentChampionNameKo; }
     public String getTeamPosition() { return teamPosition; }
     public String getTeamPositionKo() { return teamPositionKo; }
     public int getTotalDamageDealtToChampions() { return totalDamageDealtToChampions; }

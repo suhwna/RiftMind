@@ -70,9 +70,9 @@ public class MatchQueryService {
      * @param matchId Riot matchId
      * @return 매치 상세 정보
      */
-    public MatchDetailView getMatchDetail(String matchId) {
+    public MatchDetailView getMatchDetail(String matchId, String focusPuuid) {
         return matchSummaryRepository.findWithParticipantsByMatchId(matchId)
-                .map(MatchDetailView::from)
+                .map(matchSummary -> MatchDetailView.from(matchSummary, focusPuuid))
                 .orElseThrow(() -> new ResourceNotFoundException(
                         ApiErrorCode.MATCH_NOT_FOUND,
                         "Match not found for matchId: " + matchId));

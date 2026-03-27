@@ -24,8 +24,8 @@ export function MatchDetailPage() {
   const focusPuuid = searchParams.get("puuid");
 
   const matchDetailQuery = useQuery({
-    queryKey: ["match-detail", matchId],
-    queryFn: () => getMatchDetail(matchId),
+    queryKey: ["match-detail", matchId, focusPuuid],
+    queryFn: () => getMatchDetail(matchId, focusPuuid),
     enabled: Boolean(matchId),
   });
 
@@ -91,6 +91,23 @@ export function MatchDetailPage() {
             <SummaryTile icon={<Sparkles className="h-4 w-4" />} label="게임 길이" value={detail.gameDurationText} />
             <SummaryTile icon={<Swords className="h-4 w-4" />} label="게임 모드" value={detail.queueNameKo} />
             <SummaryTile icon={<Shield className="h-4 w-4" />} label="패치 버전" value={detail.gameVersion} />
+          </div>
+        ) : null}
+
+        {detail && (detail.focusStrengths.length > 0 || detail.focusWeaknesses.length > 0) ? (
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            <InsightPanel
+              title="좋은 점"
+              accentClassName="text-emerald-300"
+              dotClassName="bg-emerald-400"
+              items={detail.focusStrengths}
+            />
+            <InsightPanel
+              title="아쉬운 점"
+              accentClassName="text-amber-300"
+              dotClassName="bg-amber-400"
+              items={detail.focusWeaknesses}
+            />
           </div>
         ) : null}
       </SectionCard>
@@ -294,6 +311,33 @@ function SummaryTile({ icon, label, value }: SummaryTileProps) {
         <p className="text-xs font-semibold uppercase tracking-[0.16em]">{label}</p>
       </div>
       <p className="mt-2 text-lg font-semibold tracking-[-0.03em] text-white">{value}</p>
+    </div>
+  );
+}
+
+type InsightPanelProps = {
+  title: string;
+  accentClassName: string;
+  dotClassName: string;
+  items: string[];
+};
+
+function InsightPanel({ title, accentClassName, dotClassName, items }: InsightPanelProps) {
+  return (
+    <div className="border border-slate-800 bg-[#0b1220] p-4">
+      <p className={`text-xs font-semibold uppercase tracking-[0.16em] ${accentClassName}`}>{title}</p>
+      {items.length > 0 ? (
+        <ul className="mt-3 space-y-2 text-sm text-slate-300">
+          {items.map((item) => (
+            <li key={item} className="flex gap-2">
+              <span className={`mt-[7px] h-1.5 w-1.5 shrink-0 ${dotClassName}`} />
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="mt-3 text-sm text-slate-500">뚜렷하게 두드러진 내용은 없었습니다.</p>
+      )}
     </div>
   );
 }

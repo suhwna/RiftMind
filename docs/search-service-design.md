@@ -6,6 +6,7 @@
 - [Development Roadmap](./common/development-roadmap.md)
 - [Development Rules](./development-rules.md)
 - [Match Service Design](./match-service-design.md)
+- [Analysis Criteria](./analysis-criteria.md)
 
 ## 1. 목적
 

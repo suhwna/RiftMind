@@ -6,7 +6,7 @@ import { useParams } from "react-router-dom";
 import { MatchSummaryCard } from "../components/MatchSummaryCard";
 import { SectionCard } from "../components/SectionCard";
 import { getChampionPortraitUrl } from "../lib/assets";
-import { getRecentMatches, getSearchFilterOptions, getSummonerByPuuid, searchMatches, syncSummoner } from "../lib/api";
+import { getRecentMatches, getSearchFilterOptions, getSearchOverview, getSummonerByPuuid, searchMatches, syncSummoner } from "../lib/api";
 import type { SearchMatchResponse, SummonerMatchSummaryResponse } from "../types/api";
 
 const INITIAL_MATCH_COUNT = 8;
@@ -51,6 +51,12 @@ export function SummonerDashboardPage() {
   const filterOptionsQuery = useQuery({
     queryKey: ["search-filter-options", puuid],
     queryFn: () => getSearchFilterOptions(puuid),
+    enabled: Boolean(puuid),
+  });
+
+  const overviewQuery = useQuery({
+    queryKey: ["search-overview", puuid],
+    queryFn: () => getSearchOverview(puuid, 100),
     enabled: Boolean(puuid),
   });
 
@@ -133,6 +139,7 @@ export function SummonerDashboardPage() {
         queryClient.invalidateQueries({ queryKey: ["summoner-profile", puuid] }),
         queryClient.invalidateQueries({ queryKey: ["recent-matches", puuid] }),
         queryClient.invalidateQueries({ queryKey: ["search-filter-options", puuid] }),
+        queryClient.invalidateQueries({ queryKey: ["search-overview", puuid] }),
         queryClient.invalidateQueries({ queryKey: ["dashboard-filtered-matches"] }),
       ]);
     },
@@ -214,8 +221,8 @@ export function SummonerDashboardPage() {
   return (
       <div className="space-y-6">
         <SectionCard title="">
-          <div className="grid gap-4 lg:grid-cols-[1.35fr_0.65fr]">
-            <div className="border border-slate-800 bg-[#0b1220]">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-stretch">
+            <div className="min-w-0 flex-1 border border-slate-800 bg-[#0b1220]">
               <div className="flex items-center justify-between gap-3 border-b border-slate-800 px-4 py-2.5">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-tide">Summoner profile</p>
                 <button
@@ -254,20 +261,67 @@ export function SummonerDashboardPage() {
                   </p>
                 </div>
               </div>
+              {overviewQuery.data?.insights.length ? (
+                <div className="border-t border-slate-800 px-4 py-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-tide">최근 10판 인사이트</p>
+                  <div className="mt-3 space-y-2">
+                    {overviewQuery.data.insights.map((insight) => (
+                      <p key={insight} className="text-sm leading-6 text-slate-300">
+                        {insight}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
             </div>
 
-            <div className="border border-slate-800 bg-[#0b1220]">
+            <div className="w-full border border-slate-800 bg-[#0b1220] lg:h-full lg:w-[360px] lg:flex-none">
               <div className="border-b border-slate-800 px-4 py-2.5">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-tide">Recent indicators</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-tide">플레이 요약</p>
               </div>
-              <div className="divide-y divide-slate-800">
-                <StatRow label="최근 승률" value={`${recentWinRate}%`} />
-                <StatRow label="평균 KDA" value={averageKda > 0 ? averageKda.toFixed(2) : "-"} />
-                <StatRow
-                  label="많이 한 챔피언"
-                  value={mostPlayedChampion ? `${mostPlayedChampion.nameKo} · ${mostPlayedChampion.count}판` : "-"}
-                />
-              </div>
+              {overviewQuery.isLoading ? <p className="px-4 py-4 text-sm text-slate-400">플레이 요약을 불러오는 중입니다...</p> : null}
+              {overviewQuery.isError ? (
+                <p className="px-4 py-4 text-sm text-rose-200">{(overviewQuery.error as Error).message}</p>
+              ) : null}
+              {overviewQuery.data ? (
+                <>
+                  <div className="divide-y divide-slate-800">
+                    <StatRow label="최근 승률" value={`${overviewQuery.data.winRate}%`} />
+                    <StatRow label="평균 KDA" value={overviewQuery.data.averageKda > 0 ? overviewQuery.data.averageKda.toFixed(2) : "-"} />
+                    <ChampionListRow
+                      label="많이 한 챔피언"
+                      champions={overviewQuery.data.topPlayedChampions}
+                    />
+                    <StatRow
+                      label="주 챔피언 성과"
+                      value={overviewQuery.data.bestChampion
+                        ? `${overviewQuery.data.bestChampion.championNameKo} · 승률 ${overviewQuery.data.bestChampion.winRate}%`
+                        : "-"}
+                    />
+                    <StatRow
+                      label="주 챔피언 상대"
+                      value={overviewQuery.data.mainChampionFrequentOpponentChampion
+                        ? `${overviewQuery.data.mainChampionFrequentOpponentChampion.championNameKo} · ${overviewQuery.data.mainChampionFrequentOpponentChampion.matchCount}판`
+                        : "-"}
+                    />
+                    <StatRow
+                      label="주 챔피언 빌드"
+                      value={overviewQuery.data.mainChampionFrequentItemNames.length > 0
+                        ? overviewQuery.data.mainChampionFrequentItemNames.join(", ")
+                        : "-"}
+                    />
+                  </div>
+                </>
+              ) : !overviewQuery.isLoading && !overviewQuery.isError ? (
+                <div className="divide-y divide-slate-800">
+                  <StatRow label="최근 승률" value={`${recentWinRate}%`} />
+                  <StatRow label="평균 KDA" value={averageKda > 0 ? averageKda.toFixed(2) : "-"} />
+                  <StatRow
+                    label="많이 한 챔피언"
+                    value={mostPlayedChampion ? `${mostPlayedChampion.nameKo} · ${mostPlayedChampion.count}판` : "-"}
+                  />
+                </div>
+              ) : null}
             </div>
           </div>
 
@@ -485,6 +539,44 @@ function StatRow({ label, value }: StatRowProps) {
     <div className="flex items-center justify-between gap-4 px-4 py-4">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">{label}</p>
       <p className="text-right text-sm font-semibold text-white">{value}</p>
+    </div>
+  );
+}
+
+type ChampionListRowProps = {
+  label: string;
+  champions: {
+    championName: string;
+    championKey: string;
+    championNameKo: string;
+    matchCount: number;
+  }[];
+};
+
+function ChampionListRow({ label, champions }: ChampionListRowProps) {
+  return (
+    <div className="px-4 py-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">{label}</p>
+      {champions.length > 0 ? (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {champions.map((champion) => (
+            <div
+              key={champion.championName}
+              className="inline-flex items-center gap-2 border border-slate-700 bg-[#111827] px-2.5 py-2 text-sm text-slate-200"
+            >
+              <img
+                src={getChampionPortraitUrl(champion.championKey, champion.championName)}
+                alt={champion.championNameKo}
+                className="h-5 w-5 object-cover"
+              />
+              <span>{champion.championNameKo}</span>
+              <span className="text-slate-500">{champion.matchCount}판</span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-2 text-sm font-semibold text-white">-</p>
+      )}
     </div>
   );
 }

@@ -2,6 +2,7 @@ import type {
   MatchDetailResponse,
   SearchFilterOptionsResponse,
   SearchMatchListResponse,
+  SearchOverviewResponse,
   SummonerMatchListResponse,
   SummonerProfileResponse,
   SummonerSyncRequest,
@@ -55,8 +56,9 @@ export function getRecentMatches(puuid: string, count = 20): Promise<SummonerMat
   return request<SummonerMatchListResponse>(`/api/v1/summoners/${puuid}/matches?count=${count}`);
 }
 
-export function getMatchDetail(matchId: string): Promise<MatchDetailResponse> {
-  return request<MatchDetailResponse>(`/api/v1/matches/${matchId}`);
+export function getMatchDetail(matchId: string, focusPuuid?: string | null): Promise<MatchDetailResponse> {
+  const query = focusPuuid ? `?focusPuuid=${encodeURIComponent(focusPuuid)}` : "";
+  return request<MatchDetailResponse>(`/api/v1/matches/${matchId}${query}`);
 }
 
 export function searchMatches(queryString: string): Promise<SearchMatchListResponse> {
@@ -65,4 +67,8 @@ export function searchMatches(queryString: string): Promise<SearchMatchListRespo
 
 export function getSearchFilterOptions(puuid: string): Promise<SearchFilterOptionsResponse> {
   return request<SearchFilterOptionsResponse>(`/api/v1/search/filter-options?puuid=${encodeURIComponent(puuid)}`);
+}
+
+export function getSearchOverview(puuid: string, count = 10): Promise<SearchOverviewResponse> {
+  return request<SearchOverviewResponse>(`/api/v1/search/overview?puuid=${encodeURIComponent(puuid)}&count=${count}`);
 }

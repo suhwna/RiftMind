@@ -34,6 +34,12 @@ public record MatchSearchSourceResponse(
         String championKey,
         @Schema(description = "챔피언 한글 이름", example = "아리")
         String championNameKo,
+        @Schema(description = "같은 포지션 상대 챔피언 이름", example = "Zed")
+        String opponentChampionName,
+        @Schema(description = "같은 포지션 상대 챔피언 아이콘 키", example = "Zed")
+        String opponentChampionKey,
+        @Schema(description = "같은 포지션 상대 챔피언 한글 이름", example = "제드")
+        String opponentChampionNameKo,
         @Schema(description = "라인 포지션", example = "MIDDLE")
         String teamPosition,
         @Schema(description = "라인 포지션 한글 이름", example = "미드")
@@ -123,6 +129,9 @@ public record MatchSearchSourceResponse(
                 view.championName(),
                 staticDataService.getChampionAssetKey(view.championName()),
                 staticDataService.getChampionNameKo(view.championName()),
+                view.opponentChampionName(),
+                staticDataService.getChampionAssetKey(view.opponentChampionName()),
+                staticDataService.getChampionNameKo(view.opponentChampionName()),
                 view.teamPosition(),
                 staticDataService.getTeamPositionKo(view.teamPosition()),
                 view.kills(),

@@ -73,8 +73,10 @@ public class MatchController {
     @GetMapping("/{matchId}")
     @Operation(summary = "매치 상세 조회", description = "저장된 매치 상세 정보를 matchId 기준으로 조회합니다.")
     public MatchDetailResponse getMatchDetail(
-            @Parameter(description = "Riot matchId", example = "KR_1234567890") @PathVariable String matchId) {
-        return MatchDetailResponse.from(matchQueryService.getMatchDetail(matchId), staticDataService);
+            @Parameter(description = "Riot matchId", example = "KR_1234567890") @PathVariable String matchId,
+            @Parameter(description = "인사이트 기준 PUUID", example = "sample-puuid-value")
+            @RequestParam(required = false) String focusPuuid) {
+        return MatchDetailResponse.from(matchQueryService.getMatchDetail(matchId, focusPuuid), staticDataService);
     }
 
     /**

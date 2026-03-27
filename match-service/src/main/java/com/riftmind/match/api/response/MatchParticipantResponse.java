@@ -104,7 +104,47 @@ public record MatchParticipantResponse(
         @Schema(description = "경기 해석 태그 목록")
         List<String> interpretationTags,
         @Schema(description = "총 받은 피해량", example = "18422")
-        int totalDamageTaken) {
+        int totalDamageTaken,
+        @Schema(description = "더블킬 횟수", example = "1")
+        int doubleKills,
+        @Schema(description = "트리플킬 횟수", example = "0")
+        int tripleKills,
+        @Schema(description = "쿼드라킬 횟수", example = "0")
+        int quadraKills,
+        @Schema(description = "펜타킬 횟수", example = "0")
+        int pentaKills,
+        @Schema(description = "최대 킬링 스프리", example = "4")
+        int largestKillingSpree,
+        @Schema(description = "최대 멀티킬 등급", example = "2")
+        int largestMultiKill,
+        @Schema(description = "킬링 스프리 횟수", example = "2")
+        int killingSprees,
+        @Schema(description = "퍼스트 블러드 킬 여부", example = "false")
+        boolean firstBloodKill,
+        @Schema(description = "퍼스트 블러드 어시스트 여부", example = "true")
+        boolean firstBloodAssist,
+        @Schema(description = "퍼스트 타워 관여 킬 여부", example = "false")
+        boolean firstTowerKill,
+        @Schema(description = "퍼스트 타워 관여 어시스트 여부", example = "false")
+        boolean firstTowerAssist,
+        @Schema(description = "포탑 파괴 수", example = "3")
+        int turretKills,
+        @Schema(description = "억제기 파괴 수", example = "1")
+        int inhibitorKills,
+        @Schema(description = "오브젝트 피해량", example = "18344")
+        int damageDealtToObjectives,
+        @Schema(description = "포탑 피해량", example = "5240")
+        int damageDealtToTurrets,
+        @Schema(description = "오브젝트 스틸 횟수", example = "0")
+        int objectivesStolen,
+        @Schema(description = "오브젝트 스틸 어시스트 횟수", example = "0")
+        int objectivesStolenAssists,
+        @Schema(description = "총 회복량", example = "4120")
+        int totalHeal,
+        @Schema(description = "아군 대상 총 회복량", example = "1200")
+        int totalHealsOnTeammates,
+        @Schema(description = "아군 대상 총 보호막량", example = "3400")
+        int totalDamageShieldedOnTeammates) {
 
     /**
      * 참가자 조회 DTO를 API 응답 DTO로 변환합니다.
@@ -180,6 +220,26 @@ public record MatchParticipantResponse(
                 staticDataService.getRuneStyleIconUrl(view.secondaryRune()),
                 staticDataService.getRuneStyleDescription(view.secondaryRune()),
                 view.interpretationTags(),
-                view.totalDamageTaken());
+                view.totalDamageTaken(),
+                view.doubleKills(),
+                view.tripleKills(),
+                view.quadraKills(),
+                view.pentaKills(),
+                view.largestKillingSpree(),
+                view.largestMultiKill(),
+                view.killingSprees(),
+                view.firstBloodKill(),
+                view.firstBloodAssist(),
+                view.firstTowerKill(),
+                view.firstTowerAssist(),
+                view.turretKills(),
+                view.inhibitorKills(),
+                view.damageDealtToObjectives(),
+                view.damageDealtToTurrets(),
+                view.objectivesStolen(),
+                view.objectivesStolenAssists(),
+                view.totalHeal(),
+                view.totalHealsOnTeammates(),
+                view.totalDamageShieldedOnTeammates());
     }
 }
