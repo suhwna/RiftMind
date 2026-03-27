@@ -7,12 +7,19 @@ import { MatchSummaryCard } from "../components/MatchSummaryCard";
 import { SectionCard } from "../components/SectionCard";
 import { getChampionPortraitUrl } from "../lib/assets";
 import { getRecentMatches, getSearchFilterOptions, getSearchOverview, getSummonerByPuuid, searchMatches, syncSummoner } from "../lib/api";
-import type { SearchMatchResponse, SummonerMatchSummaryResponse } from "../types/api";
+import type {
+  SearchMatchResponse,
+  SearchOverviewChampionAnalysisResponse,
+  SearchOverviewItemResponse,
+  SearchOverviewMatchupResponse,
+  SummonerMatchSummaryResponse,
+} from "../types/api";
 
 const INITIAL_MATCH_COUNT = 8;
 const MATCH_LOAD_STEP = 4;
 const MAX_MATCH_COUNT = 20;
 const SEARCH_PAGE_SIZE = 8;
+const OVERVIEW_MATCH_COUNT = 100;
 
 type DashboardFilterState = {
   championNames: string[];
@@ -35,6 +42,7 @@ export function SummonerDashboardPage() {
   const [requestedCount, setRequestedCount] = useState(INITIAL_MATCH_COUNT);
   const [filters, setFilters] = useState<DashboardFilterState>(initialFilterState);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [selectedChampionAnalysis, setSelectedChampionAnalysis] = useState<string>("");
 
   const profileQuery = useQuery({
     queryKey: ["summoner-profile", puuid],
@@ -56,7 +64,7 @@ export function SummonerDashboardPage() {
 
   const overviewQuery = useQuery({
     queryKey: ["search-overview", puuid],
-    queryFn: () => getSearchOverview(puuid, 100),
+    queryFn: () => getSearchOverview(puuid, OVERVIEW_MATCH_COUNT),
     enabled: Boolean(puuid),
   });
 
@@ -161,6 +169,20 @@ export function SummonerDashboardPage() {
   }, [hasActiveFilters]);
 
   useEffect(() => {
+    const firstChampion = overviewQuery.data?.championAnalyses[0]?.championName;
+    if (!firstChampion) {
+      return;
+    }
+
+    setSelectedChampionAnalysis((current) => {
+      if (current && overviewQuery.data?.championAnalyses.some((analysis) => analysis.championName === current)) {
+        return current;
+      }
+      return firstChampion;
+    });
+  }, [overviewQuery.data]);
+
+  useEffect(() => {
     if (!loadMoreRef.current || !hasMoreMatches || isFetchingMoreMatches) {
       return;
     }
@@ -218,6 +240,10 @@ export function SummonerDashboardPage() {
     setFilters(initialFilterState);
   };
 
+  const currentChampionAnalysis = overviewQuery.data?.championAnalyses.find(
+    (analysis) => analysis.championName === selectedChampionAnalysis,
+  ) ?? overviewQuery.data?.championAnalyses[0] ?? null;
+
   return (
       <div className="space-y-6">
         <SectionCard title="">
@@ -263,7 +289,7 @@ export function SummonerDashboardPage() {
               </div>
               {overviewQuery.data?.insights.length ? (
                 <div className="border-t border-slate-800 px-4 py-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-tide">최근 10판 인사이트</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-tide">플레이 인사이트</p>
                   <div className="mt-3 space-y-2">
                     {overviewQuery.data.insights.map((insight) => (
                       <p key={insight} className="text-sm leading-6 text-slate-300">
@@ -286,30 +312,33 @@ export function SummonerDashboardPage() {
               {overviewQuery.data ? (
                 <>
                   <div className="divide-y divide-slate-800">
+                    <StatRow label="분석 표본" value={`최근 ${overviewQuery.data.analyzedMatchCount}판`} />
                     <StatRow label="최근 승률" value={`${overviewQuery.data.winRate}%`} />
                     <StatRow label="평균 KDA" value={overviewQuery.data.averageKda > 0 ? overviewQuery.data.averageKda.toFixed(2) : "-"} />
+                    <StatRow label="평균 딜량" value={overviewQuery.data.averageDamage > 0 ? overviewQuery.data.averageDamage.toLocaleString("ko-KR") : "-"} />
+                    <StatRow label="평균 CS" value={overviewQuery.data.averageCs > 0 ? overviewQuery.data.averageCs.toLocaleString("ko-KR") : "-"} />
                     <ChampionListRow
                       label="많이 한 챔피언"
                       champions={overviewQuery.data.topPlayedChampions}
                     />
                     <StatRow
-                      label="주 챔피언 성과"
+                      label="가장 성과 좋은 챔피언"
                       value={overviewQuery.data.bestChampion
                         ? `${overviewQuery.data.bestChampion.championNameKo} · 승률 ${overviewQuery.data.bestChampion.winRate}%`
                         : "-"}
                     />
-                    <StatRow
-                      label="주 챔피언 상대"
-                      value={overviewQuery.data.mainChampionFrequentOpponentChampion
-                        ? `${overviewQuery.data.mainChampionFrequentOpponentChampion.championNameKo} · ${overviewQuery.data.mainChampionFrequentOpponentChampion.matchCount}판`
-                        : "-"}
-                    />
-                    <StatRow
-                      label="주 챔피언 빌드"
-                      value={overviewQuery.data.mainChampionFrequentItemNames.length > 0
-                        ? overviewQuery.data.mainChampionFrequentItemNames.join(", ")
-                        : "-"}
-                    />
+                  </div>
+                  <div className="border-t border-slate-800 px-4 py-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-tide">
+                      최근 {overviewQuery.data.recentTrend.matchCount}판 추세
+                    </p>
+                    <div className="mt-3 space-y-2">
+                      {overviewQuery.data.recentTrend.insights.map((insight) => (
+                        <p key={insight} className="text-sm leading-6 text-slate-300">
+                          {insight}
+                        </p>
+                      ))}
+                    </div>
                   </div>
                 </>
               ) : !overviewQuery.isLoading && !overviewQuery.isError ? (
@@ -328,6 +357,50 @@ export function SummonerDashboardPage() {
         {syncMutation.isError ? (
           <p className="mt-5 rounded-2xl bg-rose-950/40 px-4 py-3 text-sm text-rose-200">
             {(syncMutation.error as Error).message}
+          </p>
+        ) : null}
+      </SectionCard>
+
+      <SectionCard
+        title="챔피언별 분석"
+        description={`최근 ${OVERVIEW_MATCH_COUNT}판에서 많이 플레이한 챔피언 기준으로 성과, 상대, 빌드를 정리했습니다.`}
+      >
+        {overviewQuery.isLoading ? <p className="text-sm text-slate-400">챔피언별 분석을 불러오는 중입니다...</p> : null}
+        {overviewQuery.isError ? (
+          <p className="rounded-2xl bg-rose-950/40 px-4 py-3 text-sm text-rose-200">
+            {(overviewQuery.error as Error).message}
+          </p>
+        ) : null}
+        {overviewQuery.data?.championAnalyses.length ? (
+          <div className="space-y-4">
+            <div className="flex flex-wrap gap-2">
+              {overviewQuery.data.championAnalyses.map((analysis) => (
+                <button
+                  key={analysis.championName}
+                  type="button"
+                  onClick={() => setSelectedChampionAnalysis(analysis.championName)}
+                  className={[
+                    "inline-flex items-center gap-2 border px-3 py-2 text-sm font-medium transition",
+                    currentChampionAnalysis?.championName === analysis.championName
+                      ? "border-tide bg-tide text-ink"
+                      : "border-slate-700 bg-[#0b1220] text-slate-300 hover:bg-[#182233]",
+                  ].join(" ")}
+                >
+                  <img
+                    src={getChampionPortraitUrl(analysis.championKey, analysis.championName)}
+                    alt={analysis.championNameKo}
+                    className="h-5 w-5 border border-slate-700 object-cover"
+                  />
+                  {analysis.championNameKo}
+                </button>
+              ))}
+            </div>
+            {currentChampionAnalysis ? <ChampionAnalysisCard analysis={currentChampionAnalysis} /> : null}
+          </div>
+        ) : null}
+        {!overviewQuery.isLoading && !overviewQuery.isError && !overviewQuery.data?.championAnalyses.length ? (
+          <p className="border border-slate-800 bg-[#0b1220] px-4 py-6 text-center text-sm text-slate-400">
+            챔피언별 분석에 필요한 경기 표본이 부족합니다.
           </p>
         ) : null}
       </SectionCard>
@@ -579,6 +652,198 @@ function ChampionListRow({ label, champions }: ChampionListRowProps) {
       )}
     </div>
   );
+}
+
+type ChampionAnalysisCardProps = {
+  analysis: SearchOverviewChampionAnalysisResponse;
+};
+
+function ChampionAnalysisCard({ analysis }: ChampionAnalysisCardProps) {
+  return (
+    <div className="border border-slate-800 bg-[#0b1220]">
+      <div className="flex items-center justify-between gap-4 border-b border-slate-800 px-4 py-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <img
+            src={getChampionPortraitUrl(analysis.championKey, analysis.championName)}
+            alt={analysis.championNameKo}
+            className="h-11 w-11 border border-slate-700 object-cover"
+          />
+          <div className="min-w-0">
+            <p className="text-base font-semibold text-white">{analysis.championNameKo}</p>
+            <p className="mt-1 text-xs text-slate-500">
+              {(analysis.primaryPositionKo ? `${analysis.primaryPositionKo} · ` : "") + `${analysis.matchCount}판 · 승률 ${analysis.winRate}% · KDA ${analysis.averageKda.toFixed(2)}`}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-px border-b border-slate-800 bg-slate-800 sm:grid-cols-4">
+        <CompactOverviewStat label="평균 딜량" value={analysis.averageDamage.toLocaleString("ko-KR")} />
+        <CompactOverviewStat label="평균 골드" value={analysis.averageGold.toLocaleString("ko-KR")} />
+        <CompactOverviewStat label="평균 CS" value={analysis.averageCs.toLocaleString("ko-KR")} />
+        <CompactOverviewStat label="평균 시야" value={analysis.averageVisionScore.toLocaleString("ko-KR")} />
+      </div>
+
+      <div className="space-y-4 px-4 py-4">
+        <AnalysisListSection title="자주 만난 상대">
+          {analysis.frequentOpponents.length > 0 ? (
+            analysis.frequentOpponents.map((opponent) => (
+              <MatchupRow key={`frequent-${analysis.championName}-${opponent.championName}`} matchup={opponent} />
+            ))
+          ) : (
+            <EmptyLine />
+          )}
+        </AnalysisListSection>
+
+        <AnalysisListSection title="까다로운 상대">
+          {analysis.toughestOpponents.length > 0 ? (
+            analysis.toughestOpponents.map((opponent) => (
+              <MatchupRow key={`tough-${analysis.championName}-${opponent.championName}`} matchup={opponent} />
+            ))
+          ) : (
+            <EmptyLine />
+          )}
+        </AnalysisListSection>
+
+        <AnalysisListSection title="성과 좋은 상대">
+          {analysis.favorableOpponents.length > 0 ? (
+            analysis.favorableOpponents.map((opponent) => (
+              <MatchupRow key={`fav-${analysis.championName}-${opponent.championName}`} matchup={opponent} />
+            ))
+          ) : (
+            <EmptyLine />
+          )}
+        </AnalysisListSection>
+
+        <AnalysisListSection title="자주 간 아이템">
+          {analysis.frequentItems.length > 0 ? (
+            <div className="space-y-2">
+              {analysis.frequentItems.map((item) => (
+                <ItemRow key={`${analysis.championName}-${item.itemName}`} item={item} />
+              ))}
+            </div>
+          ) : (
+            <EmptyLine />
+          )}
+        </AnalysisListSection>
+
+        <AnalysisListSection title="좋은 점">
+          {analysis.strengths.length > 0 ? (
+            <div className="space-y-2">
+              {analysis.strengths.map((strength) => (
+                <p key={strength} className="text-sm leading-6 text-slate-300">
+                  {strength}
+                </p>
+              ))}
+            </div>
+          ) : (
+            <EmptyLine />
+          )}
+        </AnalysisListSection>
+
+        <AnalysisListSection title="주의할 점">
+          {analysis.watchPoints.length > 0 ? (
+            <div className="space-y-2">
+              {analysis.watchPoints.map((watchPoint) => (
+                <p key={watchPoint} className="text-sm leading-6 text-slate-300">
+                  {watchPoint}
+                </p>
+              ))}
+            </div>
+          ) : (
+            <EmptyLine />
+          )}
+        </AnalysisListSection>
+
+        <AnalysisListSection title="핵심 해석">
+          <div className="space-y-2">
+            {analysis.insights.map((insight) => (
+              <p key={insight} className="text-sm leading-6 text-slate-300">
+                {insight}
+              </p>
+            ))}
+          </div>
+        </AnalysisListSection>
+      </div>
+    </div>
+  );
+}
+
+type CompactOverviewStatProps = {
+  label: string;
+  value: string;
+};
+
+function CompactOverviewStat({ label, value }: CompactOverviewStatProps) {
+  return (
+    <div className="bg-[#101722] px-4 py-3">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">{label}</p>
+      <p className="mt-2 text-sm font-semibold text-white">{value}</p>
+    </div>
+  );
+}
+
+type AnalysisListSectionProps = {
+  title: string;
+  children: ReactNode;
+};
+
+function AnalysisListSection({ title, children }: AnalysisListSectionProps) {
+  return (
+    <div className="space-y-2">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">{title}</p>
+      {children}
+    </div>
+  );
+}
+
+type MatchupRowProps = {
+  matchup: SearchOverviewMatchupResponse;
+};
+
+function MatchupRow({ matchup }: MatchupRowProps) {
+  return (
+    <div className="flex items-center justify-between gap-3 border border-slate-800 bg-[#111827] px-3 py-2.5">
+      <div className="flex min-w-0 items-center gap-2">
+        <img
+          src={getChampionPortraitUrl(matchup.championKey, matchup.championName)}
+          alt={matchup.championNameKo}
+          className="h-8 w-8 border border-slate-700 object-cover"
+        />
+        <div className="min-w-0">
+          <p className="truncate text-sm font-medium text-slate-200">{matchup.championNameKo}</p>
+          <p className="text-xs text-slate-500">{matchup.matchCount}판</p>
+        </div>
+      </div>
+      <div className="text-right text-xs text-slate-400">
+        <p>승률 {matchup.winRate}%</p>
+        <p>KDA {matchup.averageKda.toFixed(2)} · 데스 {matchup.averageDeaths.toFixed(2)}</p>
+      </div>
+    </div>
+  );
+}
+
+type ItemRowProps = {
+  item: SearchOverviewItemResponse;
+};
+
+function ItemRow({ item }: ItemRowProps) {
+  return (
+    <div className="flex items-center justify-between gap-3 border border-slate-800 bg-[#111827] px-3 py-2.5">
+      <div className="min-w-0">
+        <p className="truncate text-sm font-medium text-slate-200">{item.itemName}</p>
+        <p className="mt-1 text-xs text-slate-500">{item.matchCount}판 사용</p>
+      </div>
+      <div className="text-right text-xs text-slate-400">
+        <p>승률 {item.winRate}%</p>
+        <p>KDA {item.averageKda.toFixed(2)}</p>
+      </div>
+    </div>
+  );
+}
+
+function EmptyLine() {
+  return <p className="text-sm text-slate-500">표시할 데이터가 아직 충분하지 않습니다.</p>;
 }
 
 type FilterSectionProps = {

@@ -18,7 +18,7 @@ public class RiotApiProperties {
     private String dataDragonRealm = "kr";
     private String dataDragonLocale = "ko_KR";
     private String apiKey;
-    private int matchFetchMaxCount = 20;
+    private int matchFetchMaxCount = 100;
 
     /**
      * Account API 기본 URL을 반환합니다.

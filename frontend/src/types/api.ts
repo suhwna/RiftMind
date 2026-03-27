@@ -219,13 +219,56 @@ export type SearchOverviewChampionResponse = {
   averageKda: number;
 };
 
-export type SearchOverviewPositionResponse = {
-  teamPosition: string;
-  teamPositionKo: string;
+export type SearchOverviewMatchupResponse = {
+  championName: string;
+  championKey: string;
+  championNameKo: string;
   matchCount: number;
   winCount: number;
   winRate: number;
   averageKda: number;
+  averageDeaths: number;
+};
+
+export type SearchOverviewItemResponse = {
+  itemName: string;
+  matchCount: number;
+  winCount: number;
+  winRate: number;
+  averageKda: number;
+};
+
+export type SearchOverviewRecentTrendResponse = {
+  matchCount: number;
+  winRate: number;
+  averageKda: number;
+  averageDamage: number;
+  averageCs: number;
+  averageVisionScore: number;
+  insights: string[];
+};
+
+export type SearchOverviewChampionAnalysisResponse = {
+  championName: string;
+  championKey: string;
+  championNameKo: string;
+  primaryPosition: string | null;
+  primaryPositionKo: string | null;
+  matchCount: number;
+  winCount: number;
+  winRate: number;
+  averageKda: number;
+  averageDamage: number;
+  averageGold: number;
+  averageCs: number;
+  averageVisionScore: number;
+  frequentOpponents: SearchOverviewMatchupResponse[];
+  favorableOpponents: SearchOverviewMatchupResponse[];
+  toughestOpponents: SearchOverviewMatchupResponse[];
+  frequentItems: SearchOverviewItemResponse[];
+  strengths: string[];
+  watchPoints: string[];
+  insights: string[];
 };
 
 export type SearchOverviewResponse = {
@@ -242,15 +285,8 @@ export type SearchOverviewResponse = {
   averageCs: number;
   averageVisionScore: number;
   topPlayedChampions: SearchOverviewChampionResponse[];
-  mostPlayedChampion: SearchOverviewChampionResponse | null;
   bestChampion: SearchOverviewChampionResponse | null;
-  mainChampionFrequentOpponentChampion: SearchOverviewChampionResponse | null;
-  mainChampionToughestOpponentChampion: SearchOverviewChampionResponse | null;
-  mainChampionFrequentItemNames: string[];
-  toughestOpponentChampion: SearchOverviewChampionResponse | null;
-  frequentOpponentChampion: SearchOverviewChampionResponse | null;
-  bestPosition: SearchOverviewPositionResponse | null;
-  weakPosition: SearchOverviewPositionResponse | null;
-  frequentItemNames: string[];
+  recentTrend: SearchOverviewRecentTrendResponse;
+  championAnalyses: SearchOverviewChampionAnalysisResponse[];
   insights: string[];
 };

@@ -10,3 +10,5 @@
 **/*.trace.db
 /scripts
 /db
+/docs
+/docs

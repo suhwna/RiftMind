@@ -16,8 +16,8 @@ public record MatchSyncRequest(
         @Schema(description = "Riot PUUID", example = "sample-puuid-value")
         @NotBlank
         String puuid,
-        @Schema(description = "동기화할 경기 수", example = "20")
+        @Schema(description = "동기화할 경기 수", example = "100")
         @Min(1)
-        @Max(20)
+        @Max(100)
         Integer matchCount) {
 }

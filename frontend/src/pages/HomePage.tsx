@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { SectionCard } from "../components/SectionCard";
 import { syncSummoner } from "../lib/api";
 
-const DEFAULT_MATCH_COUNT = 10;
+const DEFAULT_MATCH_COUNT = 20;
 
 function parseRiotId(input: string) {
   const [gameName, tagLine] = input.split("#");
@@ -61,7 +61,7 @@ export function HomePage() {
 
       <SectionCard
         title="전적 불러오기"
-        description="Riot ID와 최근 경기 수를 선택한 뒤 바로 대시보드로 이동합니다."
+        description="Riot ID 기준 최근 20경기를 먼저 동기화한 뒤 바로 대시보드로 이동합니다."
       >
         <form className="space-y-5" onSubmit={handleSubmit}>
           <label className="block">

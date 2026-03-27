@@ -22,16 +22,9 @@ public record SearchOverviewResponse(
         int averageCs,
         int averageVisionScore,
         List<SearchOverviewChampionResponse> topPlayedChampions,
-        SearchOverviewChampionResponse mostPlayedChampion,
         SearchOverviewChampionResponse bestChampion,
-        SearchOverviewChampionResponse mainChampionFrequentOpponentChampion,
-        SearchOverviewChampionResponse mainChampionToughestOpponentChampion,
-        List<String> mainChampionFrequentItemNames,
-        SearchOverviewChampionResponse toughestOpponentChampion,
-        SearchOverviewChampionResponse frequentOpponentChampion,
-        SearchOverviewPositionResponse bestPosition,
-        SearchOverviewPositionResponse weakPosition,
-        List<String> frequentItemNames,
+        SearchOverviewRecentTrendResponse recentTrend,
+        List<SearchOverviewChampionAnalysisResponse> championAnalyses,
         List<String> insights
 ) {
 }

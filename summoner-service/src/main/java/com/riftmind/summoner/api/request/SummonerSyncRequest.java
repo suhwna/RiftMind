@@ -19,8 +19,8 @@ public record SummonerSyncRequest(
         @Schema(description = "라이엇 태그 라인", example = "KR1")
         @NotBlank(message = "tagLine is required")
         String tagLine,
-        @Schema(description = "수집할 최근 경기 수", example = "20", minimum = "1", maximum = "20")
+        @Schema(description = "수집할 최근 경기 수", example = "100", minimum = "1", maximum = "100")
         @Min(value = 1, message = "matchCount must be at least 1")
-        @Max(value = 20, message = "matchCount must be at most 20")
+        @Max(value = 100, message = "matchCount must be at most 100")
         Integer matchCount) {
 }

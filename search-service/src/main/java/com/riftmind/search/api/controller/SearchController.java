@@ -97,11 +97,11 @@ public class SearchController {
      * @param count 분석할 최근 경기 수
      * @return 플레이 패턴 요약 응답
      */
-    @Operation(summary = "플레이 요약", description = "최근 N판 기준으로 승률, 챔피언/포지션 성과, 한 줄 인사이트를 반환합니다.")
+    @Operation(summary = "플레이 요약", description = "최근 N판 기준으로 전역 요약, 최근 추세, 챔피언별 분석 카드와 인사이트를 반환합니다.")
     @GetMapping("/overview")
     public SearchOverviewResponse getOverview(
             @RequestParam String puuid,
-            @RequestParam(defaultValue = "10") @Min(5) @Max(20) int count
+            @RequestParam(defaultValue = "10") @Min(5) @Max(100) int count
     ) {
         return searchAnalysisService.getOverview(puuid, count);
     }
