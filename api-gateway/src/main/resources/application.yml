@@ -36,6 +36,10 @@ spring:
               uri: ${SEARCH_SERVICE_URL:http://localhost:18082}
               predicates:
                 - Path=/api/v1/search/**
+            - id: ai-service
+              uri: ${AI_SERVICE_URL:http://localhost:18083}
+              predicates:
+                - Path=/api/v1/ai/**
             - id: summoner-service-docs
               uri: ${SUMMONER_SERVICE_URL:http://localhost:18080}
               predicates:
@@ -54,6 +58,12 @@ spring:
                 - Path=/v3/api-docs/search-service
               filters:
                 - SetPath=/v3/api-docs
+            - id: ai-service-docs
+              uri: ${AI_SERVICE_URL:http://localhost:18083}
+              predicates:
+                - Path=/v3/api-docs/ai-service
+              filters:
+                - SetPath=/v3/api-docs
 
 springdoc:
   swagger-ui:
@@ -66,6 +76,8 @@ springdoc:
         url: /v3/api-docs/match-service
       - name: search-service
         url: /v3/api-docs/search-service
+      - name: ai-service
+        url: /v3/api-docs/ai-service
 
 server:
   port: ${SERVER_PORT:18000}

@@ -120,9 +120,13 @@ public class SearchQueryService {
                 .withPageable(pageable)
                 .build();
 
+        // 매치 검색은 다양한 조건을 조합하여 정확한 결과를 반환해야 하므로,
+        // 검색 쿼리를 동적으로 생성하여 Elasticsearch에 전달합니다.
+        // 예를 들어 사용자가 챔피언 이름과 포지션을 모두 선택한 경우, 두 조건이 모두 적용된 쿼리가 생성되어야 합니다.
         SearchHits<MatchSearchDocument> searchHits =
                 elasticsearchOperations.search(searchQuery, MatchSearchDocument.class);
 
+        // 검색 결과에서 매치 정보를 추출하여 응답 객체로 변환합니다. 예를 들어 매치 검색 결과는 MatchSearchDocument의 필드를 기반으로 SearchMatchResponse로 매핑되어야 합니다.
         List<SearchMatchResponse> matches = searchHits.getSearchHits().stream()
                 .map(SearchHit::getContent)
                 .map(SearchMatchResponse::from)
@@ -150,7 +154,6 @@ public class SearchQueryService {
         Map<String, SearchFilterPositionOptionResponse> positions = new LinkedHashMap<>();
         Map<Integer, SearchFilterModeOptionResponse> modes = new LinkedHashMap<>();
 
-        // 매치 검색과 달리 필터 옵션 계산은 최대 100개 매치까지만 조회하여 집계합니다. 일반적으로 최근 20~50개 매치 내에 충분한 옵션이 포함되어 있기 때문입니다.
         searchHits.getSearchHits().stream()
                 .map(SearchHit::getContent)
                 .forEach(document -> {
@@ -336,21 +339,10 @@ public class SearchQueryService {
      */
     private Query termQuery(String field, String value) {
         return Query.of(query -> query.term(term -> term.field(field).value(value)));
-    }
-
-    /**
-     * 챔피언 이름은 영문/한글 양쪽 필드에서 부분 일치로 검색합니다.
-     *
-     * @param championName 사용자가 입력한 챔피언 이름
-     * @return 챔피언 이름 검색 쿼리
-     */
-    private Query championNameQuery(String championName) {
-        String keyword = "*" + championName.trim() + "*";
-
-        return Query.of(query -> query.bool(bool -> bool.should(
-                wildcardQuery("championName", keyword),
-                wildcardQuery("championNameKo", keyword)
-        ).minimumShouldMatch("1")));
+        // Elasticsearch의 term 쿼리는 기본적으로 대소문자를 구분하므로,
+        // 챔피언 이름과 같이 대소문자가 혼합된 필드에 대해서는 검색어를 소문자로 변환하여 일치하도록 처리할 수 있습니다.
+        // 예를 들어 "Seraphine"으로 검색한 경우 championName이 "Seraphine"이지만 championNameKo가 "세라핀"인 매치가 존재할 수 있으므로,
+        // term 쿼리를 사용할 때는 검색어를 소문자로 변환하여 일치하도록 처리해야 합니다.
     }
 
     private Query anyChampionQuery(List<String> championNames) {

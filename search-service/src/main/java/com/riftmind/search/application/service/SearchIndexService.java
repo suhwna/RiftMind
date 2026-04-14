@@ -45,11 +45,13 @@ public class SearchIndexService {
      */
     public MatchIndexResponse indexRecentMatches(String puuid, int matchCount) {
         try {
-            ensureIndexExists();
+            ensureIndexExists(); // 인덱스가 존재하지 않으면 생성
 
+            // match-service에서 최근 경기 데이터 조회
             MatchServiceClient.SearchSourceListResult result =
                     matchServiceClient.getRecentMatchesForSearch(puuid, matchCount);
 
+            // 조회된 경기 데이터를 Elasticsearch 검색 문서로 변환
             List<MatchSearchDocument> documents = result.matches().stream()
                     .map(match -> new MatchSearchDocument(
                             match.matchId() + ":" + result.puuid(),
@@ -99,8 +101,8 @@ public class SearchIndexService {
                     ))
                     .toList();
 
-            matchSearchDocumentRepository.saveAll(documents);
-            elasticsearchOperations.indexOps(MatchSearchDocument.class).refresh();
+            matchSearchDocumentRepository.saveAll(documents); // Elasticsearch에 색인 저장
+            elasticsearchOperations.indexOps(MatchSearchDocument.class).refresh(); // 색인 강제 새로고침
 
             return new MatchIndexResponse(
                     result.puuid(),
@@ -118,14 +120,25 @@ public class SearchIndexService {
         }
     }
 
+    /**
+     * Elasticsearch 인덱스가 존재하는지 확인하고, 존재하지 않으면 생성합니다.
+     */
     private void ensureIndexExists() {
-        IndexOperations indexOperations = elasticsearchOperations.indexOps(MatchSearchDocument.class);
+        IndexOperations indexOperations = elasticsearchOperations.indexOps(MatchSearchDocument.class); // 인덱스 작업 객체 생성
         if (!indexOperations.exists()) {
             indexOperations.create();
-            indexOperations.putMapping(indexOperations.createMapping(MatchSearchDocument.class));
+            indexOperations.putMapping(indexOperations.createMapping(MatchSearchDocument.class)); // 매핑 설정 적용
         }
     }
 
+    /**
+     * 킬, 데스, 어시스트를 기반으로 KDA를 계산합니다. 데스가 0인 경우에는 KDA를 (킬 + 어시스트)로 간주합니다.
+     *
+     * @param kills 킬 수
+     * @param deaths 데스 수
+     * @param assists 어시스트 수
+     * @return 계산된 KDA 값
+     */
     private double calculateKda(int kills, int deaths, int assists) {
         if (deaths == 0) {
             return kills + assists;
@@ -133,6 +146,12 @@ public class SearchIndexService {
         return (double) (kills + assists) / deaths;
     }
 
+    /**
+     * 예외의 원인 메시지를 재귀적으로 탐색하여 가장 근본적인 원인 메시지를 반환합니다. 메시지가 없는 경우에는 예외 클래스 이름을 반환합니다.
+     *
+     * @param throwable 탐색할 예외 객체
+     * @return 가장 근본적인 원인 메시지 또는 예외 클래스 이름
+     */
     private String resolveCauseMessage(Throwable throwable) {
         Throwable current = throwable;
         while (current.getCause() != null) {

@@ -71,6 +71,11 @@ $services = @(
         MavenModule = "search-service"
     },
     @{
+        Name = "ai-service"
+        Port = 18083
+        MavenModule = "ai-service"
+    },
+    @{
         Name = "match-service"
         Port = 18081
         MavenModule = "match-service"
