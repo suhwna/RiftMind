@@ -10,6 +10,7 @@ export type SummonerSyncResponse = {
   tagLine: string;
   requestedMatchCount: number;
   savedMatchCount: number;
+  existingMatchCount: number;
   syncedAt: string;
 };
 

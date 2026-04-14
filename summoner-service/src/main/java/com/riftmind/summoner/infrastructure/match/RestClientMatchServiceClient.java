@@ -45,7 +45,8 @@ public class RestClientMatchServiceClient implements MatchServiceClient {
             return new MatchSyncResult(
                     response.puuid(),
                     response.requestedMatchCount(),
-                    response.savedMatchCount());
+                    response.savedMatchCount(),
+                    response.existingMatchCount());
         } catch (RestClientException exception) {
             throw new RiotApiException("Failed to call match-service sync API: " + exception.getMessage());
         }
@@ -84,6 +85,7 @@ public class RestClientMatchServiceClient implements MatchServiceClient {
     private record MatchSyncResponse(
             String puuid,
             int requestedMatchCount,
-            int savedMatchCount) {
+            int savedMatchCount,
+            int existingMatchCount) {
     }
 }

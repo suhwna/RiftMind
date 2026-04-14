@@ -20,6 +20,8 @@ public record MatchSyncResponse(
         int requestedMatchCount,
         @Schema(description = "저장한 경기 수", example = "20")
         int savedMatchCount,
+        @Schema(description = "이미 저장되어 상세 조회를 생략한 경기 수", example = "5")
+        int existingMatchCount,
         @Schema(description = "동기화 시각", example = "2026-03-24T10:30:00")
         LocalDateTime syncedAt) {
 
@@ -34,6 +36,7 @@ public record MatchSyncResponse(
                 result.puuid(),
                 result.requestedMatchCount(),
                 result.savedMatchCount(),
+                result.existingMatchCount(),
                 result.syncedAt());
     }
 }

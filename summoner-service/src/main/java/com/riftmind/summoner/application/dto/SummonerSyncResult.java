@@ -14,5 +14,6 @@ public record SummonerSyncResult(
         String tagLine,
         int requestedMatchCount,
         int savedMatchCount,
+        int existingMatchCount,
         LocalDateTime syncedAt) {
 }

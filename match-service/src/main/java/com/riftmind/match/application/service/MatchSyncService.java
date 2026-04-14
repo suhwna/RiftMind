@@ -59,7 +59,13 @@ public class MatchSyncService {
             LocalDateTime syncedAt = LocalDateTime.now();
 
             int savedMatchCount = 0;
+            int existingMatchCount = 0;
             for (String matchId : matchIds) {
+                if (matchSummaryRepository.existsById(matchId)) {
+                    existingMatchCount++;
+                    continue;
+                }
+
                 RiotMatchPayload riotMatch = riotPlatformGateway.fetchMatchById(matchId);
                 upsertMatch(riotMatch);
                 savedMatchCount++;
@@ -71,6 +77,7 @@ public class MatchSyncService {
                     puuid,
                     normalizedCount,
                     savedMatchCount,
+                    existingMatchCount,
                     syncedAt);
         } catch (RuntimeException exception) {
             syncHistoryRepository.save(SyncHistory.failure(puuid, normalizedCount, exception.getMessage()));

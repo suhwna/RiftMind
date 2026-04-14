@@ -6,6 +6,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 
 import com.riftmind.ai.infrastructure.config.MatchServiceProperties;
 import com.riftmind.ai.infrastructure.config.OpenAiProperties;
+import com.riftmind.ai.infrastructure.config.SearchServiceProperties;
 
 /**
  * AI Service 애플리케이션의 시작점입니다.
@@ -14,7 +15,7 @@ import com.riftmind.ai.infrastructure.config.OpenAiProperties;
  * @since 2026-04-14
  */
 @SpringBootApplication
-@EnableConfigurationProperties({OpenAiProperties.class, MatchServiceProperties.class})
+@EnableConfigurationProperties({OpenAiProperties.class, MatchServiceProperties.class, SearchServiceProperties.class})
 public class AiServiceApplication {
 
     /**

@@ -24,6 +24,8 @@ public record SummonerSyncResponse(
         int requestedMatchCount,
         @Schema(description = "실제로 저장된 경기 수", example = "20")
         int savedMatchCount,
+        @Schema(description = "이미 저장되어 상세 조회를 생략한 경기 수", example = "5")
+        int existingMatchCount,
         @Schema(description = "동기화 완료 시각", example = "2026-03-23T14:30:00")
         LocalDateTime syncedAt) {
 
@@ -40,6 +42,7 @@ public record SummonerSyncResponse(
                 result.tagLine(),
                 result.requestedMatchCount(),
                 result.savedMatchCount(),
+                result.existingMatchCount(),
                 result.syncedAt());
     }
 }

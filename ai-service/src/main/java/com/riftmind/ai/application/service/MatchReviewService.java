@@ -14,6 +14,8 @@ import com.riftmind.ai.infrastructure.match.MatchDetailResponse;
 import com.riftmind.ai.infrastructure.match.MatchParticipantResponse;
 import com.riftmind.ai.infrastructure.match.MatchServiceClient;
 import com.riftmind.ai.infrastructure.openai.OpenAiReviewClient;
+import com.riftmind.ai.infrastructure.search.SearchReviewBaselineResponse;
+import com.riftmind.ai.infrastructure.search.SearchServiceClient;
 
 /**
  * match-service 경기 상세 데이터를 AI 회고 입력으로 변환합니다.
@@ -25,14 +27,17 @@ import com.riftmind.ai.infrastructure.openai.OpenAiReviewClient;
 public class MatchReviewService {
 
     private final MatchServiceClient matchServiceClient;
+    private final SearchServiceClient searchServiceClient;
     private final OpenAiReviewClient openAiReviewClient;
     private final ObjectMapper objectMapper;
 
     public MatchReviewService(
             MatchServiceClient matchServiceClient,
+            SearchServiceClient searchServiceClient,
             OpenAiReviewClient openAiReviewClient,
             ObjectMapper objectMapper) {
         this.matchServiceClient = matchServiceClient;
+        this.searchServiceClient = searchServiceClient;
         this.openAiReviewClient = openAiReviewClient;
         this.objectMapper = objectMapper;
     }
@@ -51,14 +56,19 @@ public class MatchReviewService {
                 .findFirst()
                 .orElseThrow(() -> new ApiException(
                         ApiErrorCode.INVALID_REQUEST,
-                        "Focus participant not found for puuid: " + puuid));
+                "Focus participant not found for puuid: " + puuid));
         MatchParticipantResponse laneOpponent = resolveLaneOpponent(matchDetail.participants(), focusParticipant);
+        SearchReviewBaselineResponse reviewBaseline = searchServiceClient.getReviewBaseline(
+                focusParticipant.championName(),
+                laneOpponent == null ? null : laneOpponent.championName(),
+                focusParticipant.teamPosition());
 
         try {
             return openAiReviewClient.generateReview(objectMapper.writeValueAsString(buildPromptPayload(
                     matchDetail,
                     focusParticipant,
-                    laneOpponent)));
+                    laneOpponent,
+                    reviewBaseline)));
         } catch (JsonProcessingException exception) {
             throw new ApiException(ApiErrorCode.OPENAI_API_ERROR, "Failed to serialize match review payload.");
         }
@@ -67,7 +77,8 @@ public class MatchReviewService {
     private Map<String, Object> buildPromptPayload(
             MatchDetailResponse matchDetail,
             MatchParticipantResponse focusParticipant,
-            MatchParticipantResponse laneOpponent) {
+            MatchParticipantResponse laneOpponent,
+            SearchReviewBaselineResponse reviewBaseline) {
         Map<String, Object> payload = new LinkedHashMap<>();
         Map<String, Object> matchPayload = new LinkedHashMap<>();
         matchPayload.put("matchId", matchDetail.matchId());
@@ -79,6 +90,7 @@ public class MatchReviewService {
         payload.put("match", matchPayload);
         payload.put("player", buildParticipantPayload(focusParticipant));
         payload.put("laneOpponent", laneOpponent == null ? null : buildParticipantPayload(laneOpponent));
+        payload.put("accumulatedBaseline", reviewBaseline);
         return payload;
     }
 

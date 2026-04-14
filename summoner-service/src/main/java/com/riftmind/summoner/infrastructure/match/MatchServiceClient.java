@@ -34,10 +34,12 @@ public interface MatchServiceClient {
      * @param puuid Riot PUUID
      * @param requestedMatchCount 요청한 경기 수
      * @param savedMatchCount 저장한 경기 수
+     * @param existingMatchCount 이미 저장되어 상세 조회를 생략한 경기 수
      */
     record MatchSyncResult(
             String puuid,
             int requestedMatchCount,
-            int savedMatchCount) {
+            int savedMatchCount,
+            int existingMatchCount) {
     }
 }

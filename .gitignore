@@ -14,3 +14,12 @@
 /db
 /docs
 *.md
+!README.md
+!AGENT.md
+!docs/
+!docs/**
+/docs
+/docker
+docker-compose.db.yml
+/scripts
+/scripts

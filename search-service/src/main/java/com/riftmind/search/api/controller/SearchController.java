@@ -6,6 +6,7 @@ import com.riftmind.search.api.response.MatchIndexResponse;
 import com.riftmind.search.api.response.SearchFilterOptionsResponse;
 import com.riftmind.search.api.response.SearchMatchListResponse;
 import com.riftmind.search.api.response.SearchOverviewResponse;
+import com.riftmind.search.api.response.SearchReviewBaselineResponse;
 import com.riftmind.search.application.service.SearchAnalysisService;
 import com.riftmind.search.application.service.SearchIndexService;
 import com.riftmind.search.application.service.SearchQueryService;
@@ -104,6 +105,26 @@ public class SearchController {
             @RequestParam(defaultValue = "10") @Min(5) @Max(100) int count
     ) {
         return searchAnalysisService.getOverview(puuid, count);
+    }
+
+    /**
+     * AI 경기 회고에 사용할 누적 챔피언/매치업 기준 데이터를 조회합니다.
+     *
+     * @param championName 플레이어 챔피언 영문 이름
+     * @param opponentChampionName 상대 챔피언 영문 이름
+     * @param teamPosition 포지션
+     * @param size 조회할 최대 표본 수
+     * @return AI 회고용 누적 기준 응답
+     */
+    @Operation(summary = "AI 회고 기준 데이터", description = "누적 색인 문서에서 챔피언, 상대 챔피언, 포지션 기준 표본을 요약합니다.")
+    @GetMapping("/review-baseline")
+    public SearchReviewBaselineResponse getReviewBaseline(
+            @RequestParam String championName,
+            @RequestParam(required = false) String opponentChampionName,
+            @RequestParam(required = false) String teamPosition,
+            @RequestParam(defaultValue = "500") @Min(1) @Max(1000) int size
+    ) {
+        return searchAnalysisService.getReviewBaseline(championName, opponentChampionName, teamPosition, size);
     }
 
     /**

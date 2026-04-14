@@ -8,6 +8,7 @@ import com.riftmind.search.api.response.SearchOverviewItemResponse;
 import com.riftmind.search.api.response.SearchOverviewMatchupResponse;
 import com.riftmind.search.api.response.SearchOverviewRecentTrendResponse;
 import com.riftmind.search.api.response.SearchOverviewResponse;
+import com.riftmind.search.api.response.SearchReviewBaselineResponse;
 import com.riftmind.search.domain.search.MatchSearchDocument;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
@@ -131,6 +132,85 @@ public class SearchAnalysisService {
                 recentTrend,
                 championAnalyses,
                 buildOverviewInsights(overallMetrics, recentTrend, championAnalyses)
+        );
+    }
+
+    /**
+     * 누적 색인 문서 기준으로 AI 회고에 사용할 챔피언/매치업 기준 데이터를 반환합니다.
+     *
+     * @param championName 플레이어 챔피언 영문 이름
+     * @param opponentChampionName 상대 챔피언 영문 이름
+     * @param teamPosition 포지션
+     * @param sampleLimit 조회할 최대 표본 수
+     * @return AI 회고용 누적 기준 응답
+     */
+    public SearchReviewBaselineResponse getReviewBaseline(
+            String championName,
+            String opponentChampionName,
+            String teamPosition,
+            int sampleLimit
+    ) {
+        NativeQuery query = new NativeQueryBuilder()
+                .withQuery(reviewBaselineQuery(championName, opponentChampionName, teamPosition))
+                .withSort(sort -> sort.field(field -> field.field("gameCreation").order(SortOrder.Desc)))
+                .withPageable(PageRequest.of(0, sampleLimit))
+                .build();
+
+        SearchHits<MatchSearchDocument> searchHits =
+                elasticsearchOperations.search(query, MatchSearchDocument.class);
+
+        List<MatchSearchDocument> matches = searchHits.getSearchHits().stream()
+                .map(SearchHit::getContent)
+                .toList();
+
+        if (matches.isEmpty()) {
+            return new SearchReviewBaselineResponse(
+                    championName,
+                    null,
+                    championName,
+                    opponentChampionName,
+                    null,
+                    opponentChampionName,
+                    teamPosition,
+                    teamPosition,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    List.of(),
+                    List.of("누적 기준 표본이 아직 없습니다.")
+            );
+        }
+
+        MatchSearchDocument firstMatch = matches.get(0);
+        MetricSummary metrics = summarizeMetrics(matches);
+        List<SearchOverviewItemResponse> frequentItems = findFrequentItems(matches, 5);
+
+        return new SearchReviewBaselineResponse(
+                firstMatch.getChampionName(),
+                firstMatch.getChampionKey(),
+                firstMatch.getChampionNameKo(),
+                firstMatch.getOpponentChampionName(),
+                firstMatch.getOpponentChampionKey(),
+                firstMatch.getOpponentChampionNameKo(),
+                firstMatch.getTeamPosition(),
+                firstMatch.getTeamPositionKo(),
+                metrics.matchCount(),
+                metrics.winCount(),
+                metrics.winRate(),
+                metrics.averageKda(),
+                metrics.averageDeaths(),
+                metrics.averageDamage(),
+                metrics.averageGold(),
+                metrics.averageCs(),
+                metrics.averageVisionScore(),
+                frequentItems,
+                buildReviewBaselineInsights(firstMatch, metrics, frequentItems)
         );
     }
 
@@ -408,6 +488,33 @@ public class SearchAnalysisService {
         return insights.stream().limit(3).toList();
     }
 
+    private List<String> buildReviewBaselineInsights(
+            MatchSearchDocument firstMatch,
+            MetricSummary metrics,
+            List<SearchOverviewItemResponse> frequentItems
+    ) {
+        List<String> insights = new ArrayList<>();
+        String championNameKo = firstNonBlank(firstMatch.getChampionNameKo(), firstMatch.getChampionName(), "해당 챔피언");
+        String opponentNameKo = firstNonBlank(firstMatch.getOpponentChampionNameKo(), firstMatch.getOpponentChampionName(), "상대");
+
+        insights.add(championNameKo + " 기준 누적 " + metrics.matchCount()
+                + "판 승률은 " + metrics.winRate() + "%, 평균 KDA는 "
+                + formatDecimal(metrics.averageKda()) + "입니다.");
+
+        if (hasText(firstMatch.getOpponentChampionName())) {
+            insights.add(opponentNameKo + " 상대 표본에서 평균 데스는 "
+                    + formatDecimal(metrics.averageDeaths()) + "회입니다.");
+        }
+
+        if (!frequentItems.isEmpty()) {
+            SearchOverviewItemResponse frequentItem = frequentItems.get(0);
+            insights.add("가장 자주 나온 아이템은 " + frequentItem.itemName()
+                    + "이며 " + frequentItem.matchCount() + "판에서 사용됐습니다.");
+        }
+
+        return insights.stream().limit(3).toList();
+    }
+
     private List<MatchSearchDocument> filterChampionMatches(List<MatchSearchDocument> matches, String championName) {
         return matches.stream()
                 .filter(match -> championName.equals(match.getChampionName()))
@@ -649,6 +756,19 @@ public class SearchAnalysisService {
         return Query.of(query -> query.term(term -> term.field(field).value(value)));
     }
 
+    private Query reviewBaselineQuery(String championName, String opponentChampionName, String teamPosition) {
+        return Query.of(query -> query.bool(bool -> {
+            bool.must(termQuery("championName", championName));
+            if (hasText(opponentChampionName)) {
+                bool.must(termQuery("opponentChampionName", opponentChampionName));
+            }
+            if (hasText(teamPosition)) {
+                bool.must(termQuery("teamPosition", teamPosition));
+            }
+            return bool;
+        }));
+    }
+
     private int toPercent(int value, int total) {
         if (total <= 0) {
             return 0;
@@ -670,6 +790,16 @@ public class SearchAnalysisService {
 
     private boolean hasText(String value) {
         return value != null && !value.isBlank();
+    }
+
+    private String firstNonBlank(String first, String second, String fallback) {
+        if (hasText(first)) {
+            return first;
+        }
+        if (hasText(second)) {
+            return second;
+        }
+        return fallback;
     }
 
     private record ChampionSummary(

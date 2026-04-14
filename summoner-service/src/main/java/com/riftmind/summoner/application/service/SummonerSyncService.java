@@ -74,6 +74,7 @@ public class SummonerSyncService {
                     matchServiceClient.syncMatches(puuid, normalizedCount);
             searchServiceClient.indexRecentMatches(puuid, normalizedCount);
             int savedMatchCount = matchSyncResult.savedMatchCount();
+            int existingMatchCount = matchSyncResult.existingMatchCount();
 
             syncHistoryRepository.save(SyncHistory.success(puuid, normalizedCount, savedMatchCount));
 
@@ -83,7 +84,8 @@ public class SummonerSyncService {
                     riotAccount.tagLine(),
                     normalizedCount,
                     savedMatchCount,
-                syncedAt);
+                    existingMatchCount,
+                    syncedAt);
         } catch (RuntimeException exception) {
             syncHistoryRepository.save(SyncHistory.failure(puuid, normalizedCount, exception.getMessage()));
             if (exception instanceof RiotApiException riotApiException) {
@@ -121,8 +123,7 @@ public class SummonerSyncService {
             RiotAccountPayload riotAccount,
             RiotSummonerPayload riotSummoner,
             LocalDateTime syncedAt) {
-        SummonerProfile summonerProfile = summonerProfileRepository.findById(riotAccount.puuid())
-                .orElseGet(() -> new SummonerProfile(riotAccount.puuid()));
+        SummonerProfile summonerProfile = findProfileForUpsert(riotAccount);
 
         summonerProfile.updateProfile(
                 riotAccount.gameName(),
@@ -134,5 +135,32 @@ public class SummonerSyncService {
                 syncedAt);
 
         summonerProfileRepository.save(summonerProfile);
+    }
+
+    /**
+     * PUUID 또는 Riot ID 기준으로 갱신 대상 프로필을 찾습니다.
+     *
+     * @param riotAccount Riot 계정 정보
+     * @return 갱신 대상 프로필
+     */
+    private SummonerProfile findProfileForUpsert(RiotAccountPayload riotAccount) {
+        return summonerProfileRepository.findById(riotAccount.puuid())
+                .orElseGet(() -> summonerProfileRepository
+                        .findByGameNameAndTagLine(riotAccount.gameName(), riotAccount.tagLine())
+                        .map(existingProfile -> replaceStaleProfile(existingProfile, riotAccount.puuid()))
+                        .orElseGet(() -> new SummonerProfile(riotAccount.puuid())));
+    }
+
+    /**
+     * 같은 Riot ID가 기존 PUUID로 남아 있으면 새 PUUID 기준 프로필로 교체합니다.
+     *
+     * @param existingProfile 기존 프로필
+     * @param puuid 최신 Riot PUUID
+     * @return 새 프로필
+     */
+    private SummonerProfile replaceStaleProfile(SummonerProfile existingProfile, String puuid) {
+        summonerProfileRepository.delete(existingProfile);
+        summonerProfileRepository.flush();
+        return new SummonerProfile(puuid);
     }
 }

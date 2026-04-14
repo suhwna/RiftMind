@@ -12,5 +12,6 @@ public record MatchSyncResult(
         String puuid,
         int requestedMatchCount,
         int savedMatchCount,
+        int existingMatchCount,
         LocalDateTime syncedAt) {
 }
