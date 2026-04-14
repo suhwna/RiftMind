@@ -43,5 +43,5 @@ riftmind:
     data-dragon-base-url: https://ddragon.leagueoflegends.com
     data-dragon-realm: kr
     data-dragon-locale: ko_KR
-    api-key: ${RIOT_API_KEY:RGAPI-123e9649-5d40-4e47-b351-d22d75136d44}
+    api-key: ${RIOT_API_KEY:}
     match-fetch-max-count: 100
